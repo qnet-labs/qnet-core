@@ -1,0 +1,34 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "qnet-core"
+version = "0.1.0"
+description = "Quantum Network Simulation Engine - Python bindings"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["quantum", "simulation", "network", "entanglement"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/qnet/qnet-core"
+Repository = "https://github.com/qnet/qnet-core"
+
+[tool.maturin]
+features = ["python", "pyo3/extension-module"]
+bindings = "pyo3"
+include = ["python/qnet_core/__init__.py"]
+
+[tool.maturin.project]
+name = "qnet_core"

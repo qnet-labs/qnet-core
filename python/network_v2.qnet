@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "v2_network",
+    "description": null,
+    "author": null,
+    "created_at": null
+  },
+  "nodes": [
+    {
+      "id": "node_a",
+      "memory_lifetime_ms": null,
+      "memory_capacity": null,
+      "node_type": null
+    },
+    {
+      "id": "node_b",
+      "memory_lifetime_ms": null,
+      "memory_capacity": null,
+      "node_type": null
+    },
+    {
+      "id": "node_c",
+      "memory_lifetime_ms": null,
+      "memory_capacity": null,
+      "node_type": null
+    }
+  ],
+  "links": [
+    {
+      "id": null,
+      "from": "node_a",
+      "to": "node_b",
+      "distance_km": 100.0,
+      "base_fidelity": 0.9,
+      "generation_rate_hz": 100.0,
+      "link_type": null,
+      "satellite": null
+    },
+    {
+      "id": null,
+      "from": "node_b",
+      "to": "node_c",
+      "distance_km": 50.0,
+      "base_fidelity": 0.95,
+      "generation_rate_hz": 200.0,
+      "link_type": null,
+      "satellite": null
+    }
+  ],
+  "config": null,
+  "constraints": null,
+  "extensions": null
+}

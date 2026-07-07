@@ -1,0 +1,32 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "invalid",
+    "description": null,
+    "author": null,
+    "created_at": null
+  },
+  "nodes": [
+    {
+      "id": "node_a",
+      "memory_lifetime_ms": null,
+      "memory_capacity": null,
+      "node_type": null
+    }
+  ],
+  "links": [
+    {
+      "id": null,
+      "from": "node_a",
+      "to": "node_a",
+      "distance_km": 10.0,
+      "base_fidelity": 0.9,
+      "generation_rate_hz": 100.0,
+      "link_type": null,
+      "satellite": null
+    }
+  ],
+  "config": null,
+  "constraints": null,
+  "extensions": null
+}

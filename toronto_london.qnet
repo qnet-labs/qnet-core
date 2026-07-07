@@ -1,0 +1,68 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "toronto_london_hybrid",
+    "description": "Toronto to London hybrid network",
+    "author": "user",
+    "created_at": "2026-06-12T12:00:00Z"
+  },
+  "nodes": [
+    {
+      "id": "Toronto",
+      "memory_lifetime_ms": 150.0,
+      "memory_capacity": 32,
+      "node_type": "ground"
+    },
+    {
+      "id": "Montreal",
+      "memory_lifetime_ms": null,
+      "memory_capacity": null,
+      "node_type": null
+    },
+    {
+      "id": "London",
+      "memory_lifetime_ms": null,
+      "memory_capacity": null,
+      "node_type": null
+    },
+    {
+      "id": "SAT-1",
+      "memory_lifetime_ms": 300.0,
+      "memory_capacity": null,
+      "node_type": "satellite"
+    }
+  ],
+  "links": [
+    {
+      "id": null,
+      "from": "Toronto",
+      "to": "SAT-1",
+      "distance_km": 1000.0,
+      "base_fidelity": 0.98,
+      "generation_rate_hz": 50.0,
+      "link_type": null,
+      "satellite": null
+    },
+    {
+      "id": null,
+      "from": "SAT-1",
+      "to": "London",
+      "distance_km": 6000.0,
+      "base_fidelity": 0.97,
+      "generation_rate_hz": 50.0,
+      "link_type": null,
+      "satellite": null
+    }
+  ],
+  "config": {
+    "alpha_loss": 0.04,
+    "beta_fidelity_decay": 0.02,
+    "gamma_swapping": 0.85,
+    "max_attempts": 100
+  },
+  "constraints": {
+    "fidelity_target": 0.85,
+    "max_latency_ms": 50.0
+  },
+  "extensions": null
+}

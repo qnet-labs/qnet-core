@@ -1,0 +1,39 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0", "rust-toolchain>=1.70"]
+build-backend = "maturin"
+
+[project]
+name = "qnet-core"
+version = "0.1.0"
+description = "Quantum Network Simulation Engine — entanglement distribution across repeater networks"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+license-files = { paths = ["LICENSE"] }
+keywords = ["quantum", "simulation", "network", "entanglement", "repeater", "physics"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/qnet-labs/qnet-core"
+Repository = "https://github.com/qnet-labs/qnet-core"
+Issues = "https://github.com/qnet-labs/qnet-core/issues"
+Changelog = "https://github.com/qnet-labs/qnet-core/blob/main/CHANGELOG.md"
+
+[tool.maturin]
+features = ["python", "pyo3/extension-module"]
+bindings = "pyo3"
+
+[tool.mypy]
+strict = true
+
+[tool.ruff]
+target-version = "py38"
+line-length = 120
