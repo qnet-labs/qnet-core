@@ -67,10 +67,9 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target.rust_target }}
-          image: ${{
-            startsWith(matrix.target.maturin_name, 'manylinux') && 'manylinux1' || ''
-          }}
-          args: --out wheels --interpreter cp38 cp39 cp310 cp311 cp312 cp313 -m Cargo.toml
+          # Condensed onto a single line to prevent YAML syntax errors
+          image: ${{ startsWith(matrix.target.maturin_name, 'manylinux') && 'manylinux2014' || '' }}
+          args: --release --out wheels --interpreter cp38 cp39 cp310 cp311 cp312 cp313 --manifest-path Cargo.toml
 
       - run: |
           mkdir -p dist/${{ matrix.target.maturin_name }}/
