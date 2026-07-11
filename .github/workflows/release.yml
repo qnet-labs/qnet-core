@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install maturin ruff mypy
-      - run: maturin develop -o dist
+      - run: maturin develop
       - run: ruff check python/
       - run: mypy python/
 
