@@ -9,7 +9,7 @@ description = "Quantum Network Simulation Engine — entanglement distribution a
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
-license-files = { paths = ["LICENSE"] }
+license-files = "https://github.com/qnet-labs/qnet-core/blob/main/LICENSE"
 keywords = ["quantum", "simulation", "network", "entanglement", "repeater", "physics"]
 classifiers = [
     "Development Status :: 3 - Alpha",
