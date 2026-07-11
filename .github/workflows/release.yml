@@ -27,10 +27,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install maturin ruff mypy
-      - run: maturin develop
-      - run: ruff check python/
-      - run: mypy python/
+      - run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install maturin ruff mypy
+          maturin develop
+          ruff check python/
+          mypy python/
 
   # ── Cross-platform wheel builds ──────────────────────────────────
   rust-build:
