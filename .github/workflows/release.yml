@@ -70,7 +70,9 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target.rust_target }}
-          args: --release --out wheels --interpreter cp310 cp311 cp312 cp313
+          # No --interpreter on native runners — maturin auto-detects system Python.
+          # Linux builds get abi3 compatibility (unlimited Python version tag) from pyo3/abi3.
+          args: --release --out wheels
 
       - run: |
           mkdir -p dist/${{ matrix.target.maturin_name }}/
