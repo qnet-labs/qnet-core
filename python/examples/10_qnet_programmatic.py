@@ -42,8 +42,8 @@ f.constraints = PyQNetConstraints(fidelity_target=0.80, max_latency_ms=3000.0)
 # --- Save first, then validate ---
 f.save(path)
 result = validate(path)
-print(f"Validation: valid={result['valid']}, errors={result['errors']}")
-print(f"Saved {path} with {len(f.nodes)} nodes, {len(f.links)} links")
+print("Validation: valid={}, errors={}".format(result['valid'], result['errors']))
+print("Saved {} with {} nodes, {} links".format(path, len(f.nodes), len(f.links)))
 
 # --- Load it back and simulate ---
 engine = from_qnet_file(path)
@@ -55,7 +55,9 @@ stats = engine.simulate(
     max_latency_ms=3000.0,
     runs=100,
 )
-print(f"\nSat_1 -> site_b:")
+
+print()
+print("Sat_1 -> site_b:")
 print(f"  Success rate: {stats.empirical_success_rate:.2%}")
 print(f"  Mean latency: {stats.mean_latency_ms:.2f} ms")
 print(f"  Mean fidelity: {stats.mean_fidelity:.4f}")

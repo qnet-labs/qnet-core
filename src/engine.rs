@@ -1,10 +1,13 @@
-use crate::api::request::{LinkDefinition, NetworkTopologyPayload, EntanglementRequest, TopologySnapshot, TopologyDiff, TopologyConfig};
-use crate::api::response::{SimulationResult, MonteCarloStats};
+use crate::api::request::{
+    EntanglementRequest, LinkDefinition, NetworkTopologyPayload, TopologyConfig, TopologyDiff,
+    TopologySnapshot,
+};
+use crate::api::response::{MonteCarloStats, SimulationResult};
 use crate::config::SimulationConfig;
-use crate::network::QuantumNetwork;
-use crate::simulation::SimulationRuntime;
-use crate::scheduler::NetworkOrchestratorPolicy;
 use crate::montecarlo::MonteCarloSimulationEngine;
+use crate::network::QuantumNetwork;
+use crate::scheduler::NetworkOrchestratorPolicy;
+use crate::simulation::SimulationRuntime;
 use std::collections::HashMap;
 
 pub struct QNetEngine {
@@ -39,15 +42,26 @@ impl QNetEngine {
     }
 
     pub fn request_entanglement(&self, request: EntanglementRequest) -> SimulationResult {
-        let network = self.network.as_ref().expect("Network topology must be explicitly defined prior to run processing.");
+        let network = self
+            .network
+            .as_ref()
+            .expect("Network topology must be explicitly defined prior to run processing.");
         let mut runtime = SimulationRuntime::new();
         let mut orchestrator = NetworkOrchestratorPolicy::new(self.config.clone());
 
         orchestrator.coordinate_timeline(network, &mut runtime, &request, None)
     }
 
-    pub fn simulate(&self, request: EntanglementRequest, runs: usize, seed: Option<u64>) -> MonteCarloStats {
-        let network = self.network.as_ref().expect("Network topology must be explicitly defined prior to run processing.");
+    pub fn simulate(
+        &self,
+        request: EntanglementRequest,
+        runs: usize,
+        seed: Option<u64>,
+    ) -> MonteCarloStats {
+        let network = self
+            .network
+            .as_ref()
+            .expect("Network topology must be explicitly defined prior to run processing.");
 
         // Use time-based default seed if none provided — avoids all iterations using the same RNG.
         let effective_seed = seed.unwrap_or_else(|| {
@@ -57,7 +71,13 @@ impl QNetEngine {
                 .unwrap_or(0)
         });
 
-        MonteCarloSimulationEngine::execute_ensemble(network, self.config.clone(), request, runs, Some(effective_seed))
+        MonteCarloSimulationEngine::execute_ensemble(
+            network,
+            self.config.clone(),
+            request,
+            runs,
+            Some(effective_seed),
+        )
     }
 
     /// Export current network topology to JSON string
@@ -97,10 +117,10 @@ impl QNetEngine {
 
     /// Save topology to a file
     pub fn save_topology(&self, filepath: &str) -> Result<(), String> {
-        let json = self.export_topology()
+        let json = self
+            .export_topology()
             .ok_or("No network topology to save")?;
-        std::fs::write(filepath, json)
-            .map_err(|e| format!("Failed to write topology file: {}", e))
+        std::fs::write(filepath, json).map_err(|e| format!("Failed to write topology file: {}", e))
     }
 
     /// Load topology from a file
@@ -130,13 +150,24 @@ impl QNetEngine {
     }
 
     /// Compare two topology snapshots and return a diff
-    pub fn diff_topologies(snapshot1: &TopologySnapshot, snapshot2: &TopologySnapshot) -> TopologyDiff {
+    pub fn diff_topologies(
+        snapshot1: &TopologySnapshot,
+        snapshot2: &TopologySnapshot,
+    ) -> TopologyDiff {
         let name = format!("{} vs {}", snapshot1.metadata.name, snapshot2.metadata.name);
         let mut diff = TopologyDiff::new(&name);
 
         // Build maps for nodes
-        let nodes1: HashMap<&str, f64> = snapshot1.nodes.iter().map(|n| (n.id.as_str(), n.memory_lifetime_t2)).collect();
-        let nodes2: HashMap<&str, f64> = snapshot2.nodes.iter().map(|n| (n.id.as_str(), n.memory_lifetime_t2)).collect();
+        let nodes1: HashMap<&str, f64> = snapshot1
+            .nodes
+            .iter()
+            .map(|n| (n.id.as_str(), n.memory_lifetime_t2))
+            .collect();
+        let nodes2: HashMap<&str, f64> = snapshot2
+            .nodes
+            .iter()
+            .map(|n| (n.id.as_str(), n.memory_lifetime_t2))
+            .collect();
 
         // Find node differences
         for (id, lifetime) in &nodes1 {
@@ -156,8 +187,10 @@ impl QNetEngine {
         }
 
         // Build maps for links
-        let links1: HashMap<String, &LinkDefinition> = snapshot1.links.iter().map(|l| (l.link_key(), l)).collect();
-        let links2: HashMap<String, &LinkDefinition> = snapshot2.links.iter().map(|l| (l.link_key(), l)).collect();
+        let links1: HashMap<String, &LinkDefinition> =
+            snapshot1.links.iter().map(|l| (l.link_key(), l)).collect();
+        let links2: HashMap<String, &LinkDefinition> =
+            snapshot2.links.iter().map(|l| (l.link_key(), l)).collect();
 
         // Find link differences
         for (key, link) in &links1 {

@@ -2,9 +2,11 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
 use super::types::*;
-use crate::api::request::{QNetFile, QNetNode, QNetLink, QNetConfig, QNetConstraints, QNetMetadata};
-use crate::validation::QNetValidator;
+use crate::api::request::{
+    QNetConfig, QNetConstraints, QNetFile, QNetLink, QNetMetadata, QNetNode,
+};
 use crate::diff::{diff_qnet_files, QNetDiff};
+use crate::validation::QNetValidator;
 
 // ============================================================================
 // .qnet File Format Python Bindings
@@ -36,7 +38,12 @@ impl PyQNetMetadata {
         author: Option<String>,
         created_at: Option<String>,
     ) -> Self {
-        Self { name, description, author, created_at }
+        Self {
+            name,
+            description,
+            author,
+            created_at,
+        }
     }
 
     fn __repr__(&self) -> String {
@@ -212,15 +219,26 @@ impl PyQNetLink {
         satellite: Option<PyQNetSatelliteExtension>,
     ) -> Self {
         Self {
-            id, src, to, distance_km, base_fidelity, generation_rate_hz,
-            link_type, satellite,
+            id,
+            src,
+            to,
+            distance_km,
+            base_fidelity,
+            generation_rate_hz,
+            link_type,
+            satellite,
         }
     }
 
     fn __repr__(&self) -> String {
         format!(
             "PyQNetLink(id={:?}, src='{}', to='{}', dist={}km, fid={:.2}, rate={}Hz)",
-            self.id, self.src, self.to, self.distance_km, self.base_fidelity, self.generation_rate_hz
+            self.id,
+            self.src,
+            self.to,
+            self.distance_km,
+            self.base_fidelity,
+            self.generation_rate_hz
         )
     }
 }
@@ -276,12 +294,14 @@ pub struct PyQNetConstraints {
 impl PyQNetConstraints {
     #[new]
     fn new(fidelity_target: Option<f64>, max_latency_ms: Option<f64>) -> Self {
-        Self { fidelity_target, max_latency_ms }
+        Self {
+            fidelity_target,
+            max_latency_ms,
+        }
     }
 
     fn __eq__(&self, other: &PyQNetConstraints) -> bool {
-        self.fidelity_target == other.fidelity_target
-            && self.max_latency_ms == other.max_latency_ms
+        self.fidelity_target == other.fidelity_target && self.max_latency_ms == other.max_latency_ms
     }
 
     fn __repr__(&self) -> String {
@@ -301,7 +321,10 @@ impl PyQNetFile {
         Self {
             version: "1.0".to_string(),
             metadata: PyQNetMetadata {
-                name, description: None, author: None, created_at: None,
+                name,
+                description: None,
+                author: None,
+                created_at: None,
             },
             nodes: Vec::new(),
             links: Vec::new(),
@@ -344,8 +367,14 @@ impl PyQNetFile {
         satellite: Option<PyQNetSatelliteExtension>,
     ) {
         self.links.push(PyQNetLink {
-            id, src, to, distance_km, base_fidelity, generation_rate_hz,
-            link_type, satellite,
+            id,
+            src,
+            to,
+            distance_km,
+            base_fidelity,
+            generation_rate_hz,
+            link_type,
+            satellite,
         });
     }
 
@@ -359,7 +388,10 @@ impl PyQNetFile {
     fn __repr__(&self) -> String {
         format!(
             "PyQNetFile(version='{}', metadata={{name:'{}'}}, nodes={}, links={})",
-            self.version, self.metadata.name, self.nodes.len(), self.links.len()
+            self.version,
+            self.metadata.name,
+            self.nodes.len(),
+            self.links.len()
         )
     }
 }
@@ -378,25 +410,35 @@ impl From<&PyQNetFile> for QNetFile {
                 author: f.metadata.author.clone(),
                 created_at: f.metadata.created_at.clone(),
             },
-            nodes: f.nodes.iter().map(|n| QNetNode {
-                id: n.id.clone(),
-                memory_lifetime_ms: n.memory_lifetime_ms,
-                memory_capacity: n.memory_capacity.map(|v| v as u32),
-                node_type: n.node_type.map(|t| t.0),
-            }).collect(),
-            links: f.links.iter().map(|l| QNetLink {
-                id: Some(l.id.clone()),
-                from: l.src.clone(),
-                to: l.to.clone(),
-                distance_km: l.distance_km,
-                base_fidelity: l.base_fidelity,
-                generation_rate_hz: l.generation_rate_hz,
-                link_type: l.link_type.map(|t| t.0),
-                satellite: l.satellite.as_ref().map(|s| crate::api::request::QNetSatelliteExtension {
-                    visibility: s.visibility,
-                    weather_factor: s.weather_factor,
-                }),
-            }).collect(),
+            nodes: f
+                .nodes
+                .iter()
+                .map(|n| QNetNode {
+                    id: n.id.clone(),
+                    memory_lifetime_ms: n.memory_lifetime_ms,
+                    memory_capacity: n.memory_capacity.map(|v| v as u32),
+                    node_type: n.node_type.map(|t| t.0),
+                })
+                .collect(),
+            links: f
+                .links
+                .iter()
+                .map(|l| QNetLink {
+                    id: Some(l.id.clone()),
+                    from: l.src.clone(),
+                    to: l.to.clone(),
+                    distance_km: l.distance_km,
+                    base_fidelity: l.base_fidelity,
+                    generation_rate_hz: l.generation_rate_hz,
+                    link_type: l.link_type.map(|t| t.0),
+                    satellite: l.satellite.as_ref().map(|s| {
+                        crate::api::request::QNetSatelliteExtension {
+                            visibility: s.visibility,
+                            weather_factor: s.weather_factor,
+                        }
+                    }),
+                })
+                .collect(),
             config: f.config.as_ref().map(|c| QNetConfig {
                 alpha_loss: c.alpha_loss,
                 beta_fidelity_decay: c.beta_fidelity_decay,
@@ -422,8 +464,12 @@ impl From<&PyQNetFile> for QNetFile {
 /// Raises RuntimeError on IO errors, parse errors, or validation failures.
 #[pyfunction]
 pub(crate) fn load_qnet_file(filepath: &str) -> PyResult<PyQNetFile> {
-    let rust_file = crate::io::load_qnet_file(filepath)
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to load {}: {}", filepath, e)))?;
+    let rust_file = crate::io::load_qnet_file(filepath).map_err(|e| {
+        PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
+            "Failed to load {}: {}",
+            filepath, e
+        ))
+    })?;
 
     Ok(PyQNetFile {
         version: rust_file.version,
@@ -433,25 +479,33 @@ pub(crate) fn load_qnet_file(filepath: &str) -> PyResult<PyQNetFile> {
             author: rust_file.metadata.author,
             created_at: rust_file.metadata.created_at,
         },
-        nodes: rust_file.nodes.into_iter().map(|n| PyQNetNode {
-            id: n.id,
-            memory_lifetime_ms: n.memory_lifetime_ms,
-            memory_capacity: n.memory_capacity,
-            node_type: n.node_type.map(|t| PyQNetNodeType(t)),
-        }).collect(),
-        links: rust_file.links.into_iter().map(|l| PyQNetLink {
-            id: l.id.clone().unwrap_or_default(),
-            src: l.from,
-            to: l.to,
-            distance_km: l.distance_km,
-            base_fidelity: l.base_fidelity,
-            generation_rate_hz: l.generation_rate_hz,
-            link_type: l.link_type.map(|t| PyQNetLinkType(t)),
-            satellite: l.satellite.map(|s| PyQNetSatelliteExtension {
-                visibility: s.visibility,
-                weather_factor: s.weather_factor,
-            }),
-        }).collect(),
+        nodes: rust_file
+            .nodes
+            .into_iter()
+            .map(|n| PyQNetNode {
+                id: n.id,
+                memory_lifetime_ms: n.memory_lifetime_ms,
+                memory_capacity: n.memory_capacity,
+                node_type: n.node_type.map(|t| PyQNetNodeType(t)),
+            })
+            .collect(),
+        links: rust_file
+            .links
+            .into_iter()
+            .map(|l| PyQNetLink {
+                id: l.id.clone().unwrap_or_default(),
+                src: l.from,
+                to: l.to,
+                distance_km: l.distance_km,
+                base_fidelity: l.base_fidelity,
+                generation_rate_hz: l.generation_rate_hz,
+                link_type: l.link_type.map(|t| PyQNetLinkType(t)),
+                satellite: l.satellite.map(|s| PyQNetSatelliteExtension {
+                    visibility: s.visibility,
+                    weather_factor: s.weather_factor,
+                }),
+            })
+            .collect(),
         config: rust_file.config.map(|c| PyQNetConfig {
             alpha_loss: c.alpha_loss,
             beta_fidelity_decay: c.beta_fidelity_decay,
@@ -476,8 +530,12 @@ pub(crate) fn load_qnet_file(filepath: &str) -> PyResult<PyQNetFile> {
 ///         - "warnings" (list[dict]): List of warning dicts with "message" and optional "path" keys
 #[pyfunction]
 pub(crate) fn validate(filepath: &str) -> PyResult<PyObject> {
-    let qnet_file = crate::io::load_qnet_file(filepath)
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to load {}: {}", filepath, e)))?;
+    let qnet_file = crate::io::load_qnet_file(filepath).map_err(|e| {
+        PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
+            "Failed to load {}: {}",
+            filepath, e
+        ))
+    })?;
 
     let validation = QNetValidator::validate_all(&qnet_file);
 
@@ -491,18 +549,35 @@ pub(crate) fn validate(filepath: &str) -> PyResult<PyObject> {
         for error in &validation.errors {
             let err_dict = PyDict::new(py);
             let err_type_str = match &error.error_type {
-                crate::validation::ValidationErrorKind::DuplicateNodeId { id } => format!("DuplicateNodeId: {}", id),
-                crate::validation::ValidationErrorKind::UnknownNodeReference { node_id, link_id } => {
-                    format!("UnknownNodeReference: {}{}", node_id, link_id.as_ref().map(|l| format!("[{}]", l)).unwrap_or_default())
+                crate::validation::ValidationErrorKind::DuplicateNodeId { id } => {
+                    format!("DuplicateNodeId: {}", id)
                 }
-                crate::validation::ValidationErrorKind::SelfLoop { link_id } => format!("SelfLoop: {}", link_id),
+                crate::validation::ValidationErrorKind::UnknownNodeReference {
+                    node_id,
+                    link_id,
+                } => {
+                    format!(
+                        "UnknownNodeReference: {}{}",
+                        node_id,
+                        link_id
+                            .as_ref()
+                            .map(|l| format!("[{}]", l))
+                            .unwrap_or_default()
+                    )
+                }
+                crate::validation::ValidationErrorKind::SelfLoop { link_id } => {
+                    format!("SelfLoop: {}", link_id)
+                }
                 crate::validation::ValidationErrorKind::InvalidDistance { link_id, value } => {
                     format!("InvalidDistance: {} km for link '{}'", value, link_id)
                 }
                 crate::validation::ValidationErrorKind::InvalidFidelity { link_id, value } => {
                     format!("InvalidFidelity: {} for link '{}'", value, link_id)
                 }
-                crate::validation::ValidationErrorKind::InvalidGenerationRate { link_id, value } => {
+                crate::validation::ValidationErrorKind::InvalidGenerationRate {
+                    link_id,
+                    value,
+                } => {
                     format!("InvalidGenerationRate: {} Hz for link '{}'", value, link_id)
                 }
                 crate::validation::ValidationErrorKind::GraphDisconnected { component_count } => {
@@ -570,32 +645,48 @@ pub(crate) fn diff(file1: &str, file2: &str) -> PyResult<PyObject> {
 // ============================================================================
 
 #[cfg(feature = "python")]
-use crate::api::request::{PyTopologySnapshot, PyTopologyDiff, TopologySnapshot, TopologyDiff, TopologyMetadata, TopologyConfig};
+use crate::api::request::{
+    PyTopologyDiff, PyTopologySnapshot, TopologyConfig, TopologyDiff, TopologyMetadata,
+    TopologySnapshot,
+};
 
 #[cfg(feature = "python")]
 #[pyfunction]
-pub(crate) fn diff_topologies(snapshot1: PyTopologySnapshot, snapshot2: PyTopologySnapshot) -> PyResult<PyTopologyDiff> {
+pub(crate) fn diff_topologies(
+    snapshot1: PyTopologySnapshot,
+    snapshot2: PyTopologySnapshot,
+) -> PyResult<PyTopologyDiff> {
     let diff1 = TopologySnapshot {
         metadata: TopologyMetadata {
             name: snapshot1.metadata.name.clone(),
             version: snapshot1.metadata.version.clone(),
         },
-        nodes: snapshot1.nodes.into_iter().map(|n| crate::api::request::NodeDefinition {
-            id: n.id,
-            memory_lifetime_t2: n.memory_lifetime_t2,
-        }).collect(),
-        links: snapshot1.links.into_iter().map(|l| crate::api::request::LinkDefinition {
-            from_node: l.from_node,
-            to: l.to,
-            distance_km: l.distance_km,
-            base_fidelity: l.base_fidelity,
-            generation_rate_hz: l.generation_rate_hz,
-            link_type: l.link_type.0,
-            satellite_conditions: l.satellite_conditions.map(|sc| crate::api::request::SatelliteConditions {
-                visibility: sc.visibility,
-                weather_factor: sc.weather_factor,
-            }),
-        }).collect(),
+        nodes: snapshot1
+            .nodes
+            .into_iter()
+            .map(|n| crate::api::request::NodeDefinition {
+                id: n.id,
+                memory_lifetime_t2: n.memory_lifetime_t2,
+            })
+            .collect(),
+        links: snapshot1
+            .links
+            .into_iter()
+            .map(|l| crate::api::request::LinkDefinition {
+                from_node: l.from_node,
+                to: l.to,
+                distance_km: l.distance_km,
+                base_fidelity: l.base_fidelity,
+                generation_rate_hz: l.generation_rate_hz,
+                link_type: l.link_type.0,
+                satellite_conditions: l.satellite_conditions.map(|sc| {
+                    crate::api::request::SatelliteConditions {
+                        visibility: sc.visibility,
+                        weather_factor: sc.weather_factor,
+                    }
+                }),
+            })
+            .collect(),
         config: TopologyConfig {
             alpha_loss: snapshot1.config.alpha_loss,
             gamma_swapping: snapshot1.config.gamma_swapping,
@@ -606,22 +697,32 @@ pub(crate) fn diff_topologies(snapshot1: PyTopologySnapshot, snapshot2: PyTopolo
             name: snapshot2.metadata.name.clone(),
             version: snapshot2.metadata.version.clone(),
         },
-        nodes: snapshot2.nodes.into_iter().map(|n| crate::api::request::NodeDefinition {
-            id: n.id,
-            memory_lifetime_t2: n.memory_lifetime_t2,
-        }).collect(),
-        links: snapshot2.links.into_iter().map(|l| crate::api::request::LinkDefinition {
-            from_node: l.from_node,
-            to: l.to,
-            distance_km: l.distance_km,
-            base_fidelity: l.base_fidelity,
-            generation_rate_hz: l.generation_rate_hz,
-            link_type: l.link_type.0,
-            satellite_conditions: l.satellite_conditions.map(|sc| crate::api::request::SatelliteConditions {
-                visibility: sc.visibility,
-                weather_factor: sc.weather_factor,
-            }),
-        }).collect(),
+        nodes: snapshot2
+            .nodes
+            .into_iter()
+            .map(|n| crate::api::request::NodeDefinition {
+                id: n.id,
+                memory_lifetime_t2: n.memory_lifetime_t2,
+            })
+            .collect(),
+        links: snapshot2
+            .links
+            .into_iter()
+            .map(|l| crate::api::request::LinkDefinition {
+                from_node: l.from_node,
+                to: l.to,
+                distance_km: l.distance_km,
+                base_fidelity: l.base_fidelity,
+                generation_rate_hz: l.generation_rate_hz,
+                link_type: l.link_type.0,
+                satellite_conditions: l.satellite_conditions.map(|sc| {
+                    crate::api::request::SatelliteConditions {
+                        visibility: sc.visibility,
+                        weather_factor: sc.weather_factor,
+                    }
+                }),
+            })
+            .collect(),
         config: TopologyConfig {
             alpha_loss: snapshot2.config.alpha_loss,
             gamma_swapping: snapshot2.config.gamma_swapping,

@@ -1,6 +1,6 @@
-print("Example 1: Routing Strategy Trade-offs (Latency vs. Fidelity)")
-
 from qnet_core import QNetEngine, NodeDefinition, LinkDefinition, StrategyType
+
+print("Example 1: Routing Strategy Trade-offs (Latency vs. Fidelity)")
 
 # Initialize the engine
 engine = QNetEngine()

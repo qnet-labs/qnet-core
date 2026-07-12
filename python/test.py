@@ -10,7 +10,6 @@ from qnet_core import (
     PyStrategyType as StrategyType, 
     PyNodeDefinition as NodeDefinition, 
     PyLinkDefinition as LinkDefinition, 
-    PyEntanglementRequest as EntanglementRequest,
     PySimulationConfig as SimulationConfig
 )
 

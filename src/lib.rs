@@ -1,14 +1,14 @@
 // Internal Simulation, Hardware, and Physics Subsystems
 mod config;
-mod metrics;
-mod scheduler;
-mod montecarlo;
-mod simulation;
-mod network;
-mod routing;
 mod memory;
-mod swapping;
+mod metrics;
+mod montecarlo;
+mod network;
 mod protocols;
+mod routing;
+mod scheduler;
+mod simulation;
+mod swapping;
 
 // Topology Generators
 pub mod topology;
@@ -22,17 +22,22 @@ mod engine;
 pub mod python_bridge;
 
 // .qnet File Format Support
+pub mod diff;
 pub mod io;
 pub mod validation;
-pub mod diff;
 
 // Strict Boundary Contract Exports
-pub use engine::QNetEngine;
-pub use api::request::{EntanglementRequest, NetworkTopologyPayload, NodeDefinition, LinkDefinition, LinkType, SatelliteConditions, TopologySnapshot, TopologyMetadata, TopologyConfig, TopologyDiff, QNetFile, QNetNode, QNetLink, QNetConfig, QNetConstraints, QNetMetadata, QNetExtensions, QNetNodeType, QNetLinkType, QNetVersion};
-pub use api::response::{SimulationResult, MonteCarloStats};
-pub use routing::strategy::StrategyType;
+pub use api::request::{
+    EntanglementRequest, LinkDefinition, LinkType, NetworkTopologyPayload, NodeDefinition,
+    QNetConfig, QNetConstraints, QNetExtensions, QNetFile, QNetLink, QNetLinkType, QNetMetadata,
+    QNetNode, QNetNodeType, QNetVersion, SatelliteConditions, TopologyConfig, TopologyDiff,
+    TopologyMetadata, TopologySnapshot,
+};
+pub use api::response::{MonteCarloStats, SimulationResult};
 pub use config::SimulationConfig;
-pub use topology::generator::{generate_topology, TopologyType};
+pub use diff::{diff_qnet_files, ConfigDiff, ConstraintsDiff, MetadataDiff, QNetDiff};
+pub use engine::QNetEngine;
 pub use io::{load_qnet_file, save_qnet_file, QNetError};
-pub use validation::{QNetValidator, ValidationResult, ValidationError, ValidationErrorKind};
-pub use diff::{diff_qnet_files, QNetDiff, MetadataDiff, ConfigDiff, ConstraintsDiff};
+pub use routing::strategy::StrategyType;
+pub use topology::generator::{generate_topology, TopologyType};
+pub use validation::{QNetValidator, ValidationError, ValidationErrorKind, ValidationResult};

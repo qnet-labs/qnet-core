@@ -3,8 +3,14 @@ use std::collections::BinaryHeap;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum EventType {
-    AttemptLinkGeneration { from: String, to: String, base_fidelity: f64 },
-    MemoryDecayDropout { node_id: String },
+    AttemptLinkGeneration {
+        from: String,
+        to: String,
+        base_fidelity: f64,
+    },
+    MemoryDecayDropout {
+        node_id: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -20,7 +26,11 @@ impl Eq for EventWrapper {}
 
 impl Ord for EventWrapper {
     fn cmp(&self, other: &Self) -> Ordering {
-        other.0.time.partial_cmp(&self.0.time).unwrap_or(Ordering::Equal)
+        other
+            .0
+            .time
+            .partial_cmp(&self.0.time)
+            .unwrap_or(Ordering::Equal)
     }
 }
 
@@ -58,7 +68,11 @@ impl SimulationRuntime {
             }
             let EventWrapper(ev) = self.timeline.pop().unwrap();
             match ev.event_type {
-                EventType::AttemptLinkGeneration { from, to, base_fidelity } => {
+                EventType::AttemptLinkGeneration {
+                    from,
+                    to,
+                    base_fidelity,
+                } => {
                     // ~10% swap failure rate as noise (independent of timestamp)
                     use rand::Rng;
                     let mut rng = rand::thread_rng();

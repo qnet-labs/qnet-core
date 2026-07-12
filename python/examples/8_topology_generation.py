@@ -7,7 +7,7 @@ net = generate_topology("hybrid_satellite_fiber")
 engine = QNetEngine()
 engine.define_network(nodes=net.nodes, links=net.links)
 
-print(f"Hybrid satellite-fiber topology:")
+print("Hybrid satellite-fiber topology:")
 print(f"  Nodes: {len(net.nodes)}  Links: {len(net.links)}")
 node_names = [n.id for n in net.nodes]
 link_pairs = [(lnk.from_node, lnk.to) for lnk in net.links]
@@ -22,7 +22,7 @@ stats = engine.simulate(
     runs=100,
     strategy=StrategyType.HighestFidelity,
 )
-print(f"  Toronto -> London:")
+print("  Toronto -> London:")
 print(f"    Success rate: {stats.empirical_success_rate:.2%}")
 print(f"    Mean latency: {stats.mean_latency_ms:.2f} ms")
 print(f"    Mean fidelity: {stats.mean_fidelity:.4f}")
@@ -33,7 +33,7 @@ net = generate_topology("telecom_backbone")
 engine = QNetEngine()
 engine.define_network(nodes=net.nodes, links=net.links)
 
-print(f"Telecom backbone topology:")
+print("Telecom backbone topology:")
 print(f"  Nodes: {len(net.nodes)}  Links: {len(net.links)}")
 node_names = [n.id for n in net.nodes]
 link_pairs = [(lnk.from_node, lnk.to) for lnk in net.links]
@@ -48,7 +48,7 @@ stats = engine.simulate(
     runs=100,
     strategy=StrategyType.HighestFidelity,
 )
-print(f"  A -> C:")
+print("  A -> C:")
 print(f"    Success rate: {stats.empirical_success_rate:.2%}")
 print(f"    Mean latency: {stats.mean_latency_ms:.2f} ms")
 print(f"    Mean fidelity: {stats.mean_fidelity:.4f}")
@@ -59,7 +59,7 @@ net = generate_topology("repeater_chain")
 engine = QNetEngine()
 engine.define_network(nodes=net.nodes, links=net.links)
 
-print(f"Repeater chain topology:")
+print("Repeater chain topology:")
 print(f"  Nodes: {len(net.nodes)}  Links: {len(net.links)}")
 node_names = [n.id for n in net.nodes]
 link_pairs = [(lnk.from_node, lnk.to) for lnk in net.links]

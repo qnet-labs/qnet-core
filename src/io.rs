@@ -29,34 +29,30 @@ impl std::fmt::Display for QNetError {
 impl std::error::Error for QNetError {}
 
 pub fn load_qnet_file(filepath: &str) -> Result<QNetFile, QNetError> {
-     // Read file
-    let json = fs::read_to_string(filepath)
-          .map_err(QNetError::IoError)?;
+    // Read file
+    let json = fs::read_to_string(filepath).map_err(QNetError::IoError)?;
 
-     // Parse JSON
-    let file: QNetFile = serde_json::from_str(&json)
-          .map_err(QNetError::ParseError)?;
+    // Parse JSON
+    let file: QNetFile = serde_json::from_str(&json).map_err(QNetError::ParseError)?;
 
-     // Validate version
+    // Validate version
     if file.version != "1.0" {
         return Err(QNetError::VersionNotSupported(file.version));
-     }
+    }
 
-     // Validate file
+    // Validate file
     let validation = QNetValidator::validate_all(&file);
     if !validation.is_valid {
         return Err(QNetError::ValidationError(validation));
-     }
+    }
 
     Ok(file)
 }
 
 pub fn save_qnet_file(filepath: &str, file: &QNetFile) -> Result<(), QNetError> {
-    let json = serde_json::to_string_pretty(file)
-          .map_err(QNetError::ParseError)?;
+    let json = serde_json::to_string_pretty(file).map_err(QNetError::ParseError)?;
 
-    fs::write(filepath, json)
-          .map_err(QNetError::IoError)?;
+    fs::write(filepath, json).map_err(QNetError::IoError)?;
 
     Ok(())
 }

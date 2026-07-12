@@ -5,7 +5,10 @@ pub struct MemoryRegisterTracker {
 
 impl MemoryRegisterTracker {
     pub fn new(max_capacity: usize) -> Self {
-        Self { allocated_qubits: 0, max_capacity }
+        Self {
+            allocated_qubits: 0,
+            max_capacity,
+        }
     }
 
     pub fn try_buffer(&mut self) -> bool {

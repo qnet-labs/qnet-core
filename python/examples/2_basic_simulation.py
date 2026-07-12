@@ -1,6 +1,6 @@
-print("Testing Physical Constraint Boundaries (Decoherence & Latency)...")
-
 from qnet_core import QNetEngine, NodeDefinition, LinkDefinition, StrategyType
+
+print("Testing Physical Constraint Boundaries (Decoherence & Latency)...")
 
 engine = QNetEngine()
 

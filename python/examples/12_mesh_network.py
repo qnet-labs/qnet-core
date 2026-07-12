@@ -25,7 +25,7 @@ result_low_latency = engine.request_entanglement(
     fidelity_target=0.80, max_latency_ms=500.0,
     strategy=StrategyType.LowestLatency,
 )
-print(f"Lowest Latency:")
+print("Lowest Latency:")
 print(f"  Path:     {' -> '.join(result_low_latency.execution_path)}")
 print(f"  Success:  {result_low_latency.success}")
 print(f"  Latency:  {result_low_latency.latency_ms:.2f} ms")
@@ -40,14 +40,16 @@ result_high_fid = engine.request_entanglement(
     fidelity_target=0.85, max_latency_ms=500.0,
     strategy=StrategyType.HighestFidelity,
 )
-print(f"\nHighest Fidelity:")
+print()
+print("Highest Fidelity:")
 print(f"  Path:     {' -> '.join(result_high_fid.execution_path)}")
 print(f"  Success:  {result_high_fid.success}")
 print(f"  Latency:  {result_high_fid.latency_ms:.2f} ms")
 print(f"  Fidelity: {result_high_fid.final_fidelity:.4f}")
 
 # --- Strategy 3: Monte Carlo across all strategies ---
-print("\nMonte Carlo comparison (200 runs each):")
+print()
+print("Monte Carlo comparison (200 runs each):")
 for strategy, label in [(StrategyType.LowestLatency, "Lowest Latency"),
                         (StrategyType.HighestFidelity, "Highest Fidelity")]:
     engine = QNetEngine()

@@ -58,94 +58,94 @@ impl QNetDiff {
             constraints_changed: None,
             extensions_changed: None,
             summary: String::new(),
-         }
-      }
+        }
+    }
 
     pub fn generate_summary(&self) -> String {
         let mut summary = format!(
-              "Diff between '{}' and '{}':\n",
+            "Diff between '{}' and '{}':\n",
             self.source_file, self.target_file
-         );
+        );
 
         if let Some((v1, v2)) = &self.version_changed {
             summary.push_str(&format!("  Version: {} -> {}\n", v1, v2));
-          }
+        }
 
         if let Some(metadata) = &self.metadata_changed {
             summary.push_str("  Metadata changes:\n");
             if let Some((n1, n2)) = &metadata.name_changed {
                 summary.push_str(&format!("     - name: '{}' -> '{}'\n", n1, n2));
-             }
-          }
+            }
+        }
 
         if !self.nodes_added.is_empty() {
             summary.push_str(&format!(
-                  "  Nodes added: {} ({})\n",
+                "  Nodes added: {} ({})\n",
                 self.nodes_added.len(),
                 self.nodes_added.join(", ")
-             ));
-          }
+            ));
+        }
 
         if !self.nodes_removed.is_empty() {
             summary.push_str(&format!(
-                  "  Nodes removed: {} ({})\n",
+                "  Nodes removed: {} ({})\n",
                 self.nodes_removed.len(),
                 self.nodes_removed.join(", ")
-             ));
-          }
+            ));
+        }
 
         if !self.nodes_modified.is_empty() {
             summary.push_str(&format!(
-                  "  Nodes modified: {} ({})\n",
+                "  Nodes modified: {} ({})\n",
                 self.nodes_modified.len(),
                 self.nodes_modified.join(", ")
-             ));
-          }
+            ));
+        }
 
         if !self.links_added.is_empty() {
             summary.push_str(&format!(
-                  "  Links added: {} ({})\n",
+                "  Links added: {} ({})\n",
                 self.links_added.len(),
                 self.links_added.join(", ")
-             ));
-          }
+            ));
+        }
 
         if !self.links_removed.is_empty() {
             summary.push_str(&format!(
-                  "  Links removed: {} ({})\n",
+                "  Links removed: {} ({})\n",
                 self.links_removed.len(),
                 self.links_removed.join(", ")
-             ));
-          }
+            ));
+        }
 
         if !self.links_modified.is_empty() {
             summary.push_str(&format!(
-                  "  Links modified: {} ({})\n",
+                "  Links modified: {} ({})\n",
                 self.links_modified.len(),
                 self.links_modified.join(", ")
-             ));
-          }
+            ));
+        }
 
         if let Some(config) = &self.config_changed {
             summary.push_str("  Config changes:\n");
             if let Some((a1, a2)) = &config.alpha_loss_changed {
                 summary.push_str(&format!("     - alpha_loss: {:?} -> {:?}\n", a1, a2));
-             }
-          }
+            }
+        }
 
         if let Some(constraints) = &self.constraints_changed {
             summary.push_str("  Constraints changes:\n");
             if let Some((f1, f2)) = &constraints.fidelity_target_changed {
                 summary.push_str(&format!("     - fidelity_target: {:?} -> {:?}\n", f1, f2));
-             }
-          }
+            }
+        }
 
         if self.extensions_changed == Some(true) {
             summary.push_str("  Extensions changed\n");
-          }
+        }
 
         summary
-     }
+    }
 }
 
 pub fn diff_qnet_files(
@@ -156,43 +156,52 @@ pub fn diff_qnet_files(
 ) -> QNetDiff {
     let mut diff = QNetDiff::new(source_path, target_path);
 
-      // Check version
+    // Check version
     if source.version != target.version {
         diff.version_changed = Some((source.version.clone(), target.version.clone()));
-     }
+    }
 
-      // Compare metadata
+    // Compare metadata
     if source.metadata.name != target.metadata.name
-         || source.metadata.description != target.metadata.description
-         || source.metadata.author != target.metadata.author
-         || source.metadata.created_at != target.metadata.created_at
-      {
+        || source.metadata.description != target.metadata.description
+        || source.metadata.author != target.metadata.author
+        || source.metadata.created_at != target.metadata.created_at
+    {
         let metadata_diff = MetadataDiff {
             name_changed: if source.metadata.name != target.metadata.name {
                 Some((source.metadata.name.clone(), target.metadata.name.clone()))
-              } else {
+            } else {
                 None
-              },
+            },
             description_changed: if source.metadata.description != target.metadata.description {
-                Some((source.metadata.description.clone(), target.metadata.description.clone()))
-              } else {
+                Some((
+                    source.metadata.description.clone(),
+                    target.metadata.description.clone(),
+                ))
+            } else {
                 None
-              },
+            },
             author_changed: if source.metadata.author != target.metadata.author {
-                Some((source.metadata.author.clone(), target.metadata.author.clone()))
-              } else {
+                Some((
+                    source.metadata.author.clone(),
+                    target.metadata.author.clone(),
+                ))
+            } else {
                 None
-              },
+            },
             created_at_changed: if source.metadata.created_at != target.metadata.created_at {
-                Some((source.metadata.created_at.clone(), target.metadata.created_at.clone()))
-              } else {
+                Some((
+                    source.metadata.created_at.clone(),
+                    target.metadata.created_at.clone(),
+                ))
+            } else {
                 None
-              },
-          };
+            },
+        };
         diff.metadata_changed = Some(metadata_diff);
-      }
+    }
 
-      // Compare nodes
+    // Compare nodes
     let source_nodes: HashMap<&str, &crate::api::request::QNetNode> =
         source.nodes.iter().map(|n| (n.id.as_str(), n)).collect();
     let target_nodes: HashMap<&str, &crate::api::request::QNetNode> =
@@ -204,18 +213,18 @@ pub fn diff_qnet_files(
             Some(target_node) => {
                 if node != target_node {
                     diff.nodes_modified.push(id.to_string());
-                 }
-              }
-          }
-      }
+                }
+            }
+        }
+    }
 
     for (id, _) in &target_nodes {
         if !source_nodes.contains_key(id) {
             diff.nodes_added.push(id.to_string());
-         }
-      }
+        }
+    }
 
-      // Compare links
+    // Compare links
     let source_links: HashMap<String, &crate::api::request::QNetLink> =
         source.links.iter().map(|l| (link_key(l), l)).collect();
     let target_links: HashMap<String, &crate::api::request::QNetLink> =
@@ -227,80 +236,92 @@ pub fn diff_qnet_files(
             Some(target_link) => {
                 if link != target_link {
                     diff.links_modified.push(key.clone());
-                 }
-              }
-          }
-      }
+                }
+            }
+        }
+    }
 
     for (key, _) in &target_links {
         if !source_links.contains_key(key) {
             diff.links_added.push(key.clone());
-         }
-      }
+        }
+    }
 
-      // Compare config
+    // Compare config
     if source.config != target.config {
         let config_diff = ConfigDiff {
             alpha_loss_changed: if source.config.as_ref().map(|c| c.alpha_loss)
-                  != target.config.as_ref().map(|c| c.alpha_loss)
-              {
-                Some((source.config.as_ref().and_then(|c| c.alpha_loss),
-                      target.config.as_ref().and_then(|c| c.alpha_loss)))
-              } else {
+                != target.config.as_ref().map(|c| c.alpha_loss)
+            {
+                Some((
+                    source.config.as_ref().and_then(|c| c.alpha_loss),
+                    target.config.as_ref().and_then(|c| c.alpha_loss),
+                ))
+            } else {
                 None
-              },
+            },
             beta_fidelity_decay_changed: if source.config.as_ref().map(|c| c.beta_fidelity_decay)
-                  != target.config.as_ref().map(|c| c.beta_fidelity_decay)
-              {
-                Some((source.config.as_ref().and_then(|c| c.beta_fidelity_decay),
-                      target.config.as_ref().and_then(|c| c.beta_fidelity_decay)))
-              } else {
+                != target.config.as_ref().map(|c| c.beta_fidelity_decay)
+            {
+                Some((
+                    source.config.as_ref().and_then(|c| c.beta_fidelity_decay),
+                    target.config.as_ref().and_then(|c| c.beta_fidelity_decay),
+                ))
+            } else {
                 None
-              },
+            },
             gamma_swapping_changed: if source.config.as_ref().map(|c| c.gamma_swapping)
-                  != target.config.as_ref().map(|c| c.gamma_swapping)
-              {
-                Some((source.config.as_ref().and_then(|c| c.gamma_swapping),
-                      target.config.as_ref().and_then(|c| c.gamma_swapping)))
-              } else {
+                != target.config.as_ref().map(|c| c.gamma_swapping)
+            {
+                Some((
+                    source.config.as_ref().and_then(|c| c.gamma_swapping),
+                    target.config.as_ref().and_then(|c| c.gamma_swapping),
+                ))
+            } else {
                 None
-              },
+            },
             max_attempts_changed: if source.config.as_ref().map(|c| c.max_attempts)
-                  != target.config.as_ref().map(|c| c.max_attempts)
-              {
-                Some((source.config.as_ref().and_then(|c| c.max_attempts),
-                      target.config.as_ref().and_then(|c| c.max_attempts)))
-              } else {
+                != target.config.as_ref().map(|c| c.max_attempts)
+            {
+                Some((
+                    source.config.as_ref().and_then(|c| c.max_attempts),
+                    target.config.as_ref().and_then(|c| c.max_attempts),
+                ))
+            } else {
                 None
-              },
-          };
+            },
+        };
         diff.config_changed = Some(config_diff);
-      }
+    }
 
-      // Compare constraints
+    // Compare constraints
     if source.constraints != target.constraints {
         let constraints_diff = ConstraintsDiff {
             fidelity_target_changed: if source.constraints.as_ref().map(|c| c.fidelity_target)
-                  != target.constraints.as_ref().map(|c| c.fidelity_target)
-              {
-                Some((source.constraints.as_ref().and_then(|c| c.fidelity_target),
-                      target.constraints.as_ref().and_then(|c| c.fidelity_target)))
-              } else {
+                != target.constraints.as_ref().map(|c| c.fidelity_target)
+            {
+                Some((
+                    source.constraints.as_ref().and_then(|c| c.fidelity_target),
+                    target.constraints.as_ref().and_then(|c| c.fidelity_target),
+                ))
+            } else {
                 None
-              },
+            },
             max_latency_ms_changed: if source.constraints.as_ref().map(|c| c.max_latency_ms)
-                  != target.constraints.as_ref().map(|c| c.max_latency_ms)
-              {
-                Some((source.constraints.as_ref().and_then(|c| c.max_latency_ms),
-                      target.constraints.as_ref().and_then(|c| c.max_latency_ms)))
-              } else {
+                != target.constraints.as_ref().map(|c| c.max_latency_ms)
+            {
+                Some((
+                    source.constraints.as_ref().and_then(|c| c.max_latency_ms),
+                    target.constraints.as_ref().and_then(|c| c.max_latency_ms),
+                ))
+            } else {
                 None
-              },
-          };
+            },
+        };
         diff.constraints_changed = Some(constraints_diff);
-      }
+    }
 
-      // Compare extensions
+    // Compare extensions
     diff.extensions_changed = Some(source.extensions != target.extensions);
 
     diff.summary = diff.generate_summary();

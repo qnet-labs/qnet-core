@@ -1,7 +1,7 @@
 """Test boundary conditions where constraints violate fundamental physics (speed of light & decoherence)."""
-print("Testing stress-testing physical constraints (Failure Case)...")
-
 from qnet_core import QNetEngine, NodeDefinition, LinkDefinition, StrategyType
+
+print("Testing stress-testing physical constraints (Failure Case)...")
 
 engine = QNetEngine()
 

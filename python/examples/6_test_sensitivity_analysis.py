@@ -1,7 +1,7 @@
 """Test performance drop-offs by sweeping the fidelity target parameter across multiple batches."""
-print("Testing sensitivity analysis...")
-
 from qnet_core import QNetEngine, NodeDefinition, LinkDefinition, StrategyType
+
+print("Testing sensitivity analysis...")
 
 engine = QNetEngine()
 
@@ -28,7 +28,7 @@ for target in fidelity_sweeps:
         runs=50,
         strategy=StrategyType.HighestFidelity,
     )
-    
+
     print(f"  Fidelity Target Sweep: {target:.2f}")
     print(f"    Success rate: {stats.empirical_success_rate:.2%}")
     print(f"    Mean latency: {stats.mean_latency_ms:.2f} ms")

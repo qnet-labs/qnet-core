@@ -31,18 +31,20 @@ stats = engine.simulate(
     runs=200, strategy=StrategyType.HighestFidelity,
 )
 
-print(f"Monte Carlo (200 runs, X -> D):")
+print("Monte Carlo (200 runs, X -> D):")
 print(f"  Success rate:   {stats.empirical_success_rate:.2%}")
 print(f"  Mean latency:   {stats.mean_latency_ms:.2f} ms")
 print(f"  Mean fidelity:  {stats.mean_fidelity:.4f}")
 
-print("\nLink utilization heatmap (absolute use counts):")
+print()
+print("Link utilization heatmap (absolute use counts):")
 max_count = max(stats.link_utilization_heatmap.values()) if stats.link_utilization_heatmap else 1
 for link_key, count in stats.link_utilization_heatmap.items():
     bar_len = int(count / max_count * 30)
     bar = "#" * max(bar_len, 1)
     print(f"  {link_key:15s} {count:6d}  {bar}")
 
-print("\nInterpretation:")
+print()
+print("Interpretation:")
 print("  In a HighestFidelity strategy, the simulator picks X->A->D (shorter total")
 print("  distance = less decoherence). The bottom path X->B->D is underused.")

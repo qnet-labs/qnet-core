@@ -1,7 +1,7 @@
 """Test routing optimization prioritizing high fidelity (triggering purification loops)."""
-print("Testing highest success rate / fidelity routing...")
-
 from qnet_core import QNetEngine, NodeDefinition, LinkDefinition, StrategyType
+
+print("Testing highest success rate / fidelity routing...")
 
 engine = QNetEngine()
 

@@ -5,18 +5,21 @@
 //! - `engine` — PyQNetEngine, topology generators/comparisons (simulation workflow)
 //! - `qnet_io` — .qnet file types, From impls, load/validate/diff functions (serialization)
 
-pub mod types;
 pub mod engine;
 pub mod qnet_io;
+pub mod types;
 
 // Re-export all public types for external use
-pub use types::*;
 pub use engine::*;
 pub use qnet_io::*;
+pub use types::*;
 
 // Bring #[pyfunction] items into scope for wrap_pyfunction! macro.
 // These are the absolute paths from the crate root (super:: resolves to crate:: not crate::python_bridge).
-use crate::python_bridge::engine::{compare_topologies, from_qnet_file_py, generate_topology, load_topology, save_qnet_file_wrapper, save_topology};
+use crate::python_bridge::engine::{
+    compare_topologies, from_qnet_file_py, generate_topology, load_topology,
+    save_qnet_file_wrapper, save_topology,
+};
 use crate::python_bridge::qnet_io::{diff, load_qnet_file, validate};
 
 #[cfg(feature = "python")]

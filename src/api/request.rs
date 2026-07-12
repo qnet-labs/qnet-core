@@ -105,7 +105,7 @@ impl TopologySnapshot {
             metadata: TopologyMetadata {
                 name: name.to_string(),
                 version: version.to_string(),
-             },
+            },
             nodes: Vec::new(),
             links: Vec::new(),
             config: TopologyConfig::default(),
@@ -117,11 +117,18 @@ impl TopologySnapshot {
         self.nodes.push(NodeDefinition {
             id: id.to_string(),
             memory_lifetime_t2,
-         });
+        });
     }
 
     /// Add a link to the topology
-    pub fn add_link(&mut self, from: &str, to: &str, distance_km: f64, base_fidelity: f64, generation_rate_hz: f64) {
+    pub fn add_link(
+        &mut self,
+        from: &str,
+        to: &str,
+        distance_km: f64,
+        base_fidelity: f64,
+        generation_rate_hz: f64,
+    ) {
         self.links.push(LinkDefinition {
             from_node: from.to_string(),
             to: to.to_string(),
@@ -130,7 +137,7 @@ impl TopologySnapshot {
             generation_rate_hz,
             link_type: LinkType::Fiber,
             satellite_conditions: None,
-         });
+        });
     }
 }
 
@@ -191,8 +198,8 @@ impl TopologyDiff {
             links_removed: Vec::new(),
             links_modified: Vec::new(),
             summary: String::new(),
-         }
-     }
+        }
+    }
 
     /// Generate a human-readable summary
     pub fn generate_summary(&self) -> String {
@@ -203,15 +210,15 @@ impl TopologyDiff {
             self.nodes_added.len(),
             self.nodes_removed.len(),
             self.nodes_modified.len()
-         ));
+        ));
         summary.push_str(&format!(
             "{} links added, {} links removed, {} links modified.",
             self.links_added.len(),
             self.links_removed.len(),
             self.links_modified.len()
-         ));
+        ));
         summary
-     }
+    }
 }
 
 /// Link type for quantum network connections
@@ -219,9 +226,9 @@ impl TopologyDiff {
 #[serde(rename_all = "PascalCase")]
 pub enum LinkType {
     #[default]
-     /// Fiber-optic link: high bandwidth, moderate loss over distance
+    /// Fiber-optic link: high bandwidth, moderate loss over distance
     Fiber,
-     /// Satellite link: lower loss over long distances, but limited bandwidth
+    /// Satellite link: lower loss over long distances, but limited bandwidth
     Satellite,
 }
 
@@ -345,7 +352,11 @@ use pyo3::prelude::*;
 #[pymethods]
 impl NetworkTopologyPayload {
     fn __repr__(&self) -> String {
-        format!("NetworkTopologyPayload(nodes={}, links={})", self.nodes.len(), self.links.len())
+        format!(
+            "NetworkTopologyPayload(nodes={}, links={})",
+            self.nodes.len(),
+            self.links.len()
+        )
     }
 }
 
@@ -390,7 +401,7 @@ pub enum QNetNodeType {
 impl Default for QNetNodeType {
     fn default() -> Self {
         QNetNodeType::Ground
-     }
+    }
 }
 
 /// Link type for qnet format
@@ -404,7 +415,7 @@ pub enum QNetLinkType {
 impl Default for QNetLinkType {
     fn default() -> Self {
         QNetLinkType::Fiber
-     }
+    }
 }
 
 /// Satellite extension for links
@@ -421,8 +432,8 @@ impl Default for QNetSatelliteExtension {
         Self {
             visibility: 1.0,
             weather_factor: 1.0,
-         }
-     }
+        }
+    }
 }
 
 /// Enhanced node definition for qnet format
@@ -476,8 +487,8 @@ impl Default for QNetConfig {
             beta_fidelity_decay: Some(0.02),
             gamma_swapping: Some(0.85),
             max_attempts: Some(100),
-         }
-     }
+        }
+    }
 }
 
 /// Constraints for network simulation
@@ -536,14 +547,14 @@ impl QNetFile {
                 description: None,
                 author: None,
                 created_at: None,
-             },
+            },
             nodes: Vec::new(),
             links: Vec::new(),
             config: None,
             constraints: None,
             extensions: None,
-         }
-     }
+        }
+    }
 
     pub fn add_node(&mut self, id: &str) {
         self.nodes.push(QNetNode {
@@ -551,17 +562,17 @@ impl QNetFile {
             memory_lifetime_ms: None,
             memory_capacity: None,
             node_type: None,
-         });
-     }
+        });
+    }
 
     pub fn add_link(
-         &mut self,
+        &mut self,
         from: &str,
         to: &str,
         distance_km: f64,
         base_fidelity: f64,
         generation_rate_hz: f64,
-     ) {
+    ) {
         self.links.push(QNetLink {
             id: None,
             from: from.to_string(),
@@ -571,6 +582,6 @@ impl QNetFile {
             generation_rate_hz,
             link_type: None,
             satellite: None,
-         });
-     }
+        });
+    }
 }

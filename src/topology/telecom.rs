@@ -4,7 +4,7 @@ pub fn build() -> NetworkTopologyPayload {
     let mut nodes = Vec::new();
     let mut links = Vec::new();
 
-     // Nodes
+    // Nodes
     nodes.push(NodeDefinition {
         id: "A".to_string(),
         memory_lifetime_t2: 120.0, // edge
@@ -30,7 +30,7 @@ pub fn build() -> NetworkTopologyPayload {
         memory_lifetime_t2: 180.0, // alternate
     });
 
-     // Links - all fiber for telecom backbone
+    // Links - all fiber for telecom backbone
     links.push(LinkDefinition {
         from_node: "A".to_string(),
         to: "B".to_string(),

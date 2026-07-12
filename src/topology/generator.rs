@@ -13,5 +13,5 @@ pub fn generate_topology(t: TopologyType) -> NetworkTopologyPayload {
         TopologyType::TelecomBackbone => telecom::build(),
         TopologyType::RepeaterChain { length } => repeater_chain::build(length),
         TopologyType::HybridSatelliteFiber => hybrid::build(),
-     }
+    }
 }

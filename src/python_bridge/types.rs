@@ -1,10 +1,17 @@
 use pyo3::prelude::*;
 use std::collections::HashMap;
 
-use crate::api::request::{LinkType, NetworkTopologyPayload, NodeDefinition, SatelliteConditions, QNetFile, QNetNode, QNetLink, QNetConfig, QNetConstraints, QNetMetadata, QNetExtensions, QNetNodeType, QNetLinkType, QNetVersion, QNetSatelliteExtension};
+use crate::api::request::{
+    LinkType, NetworkTopologyPayload, NodeDefinition, QNetConfig, QNetConstraints, QNetExtensions,
+    QNetFile, QNetLink, QNetLinkType, QNetMetadata, QNetNode, QNetNodeType, QNetSatelliteExtension,
+    QNetVersion, SatelliteConditions,
+};
 
 #[cfg(feature = "python")]
-use crate::api::request::{PyTopologySnapshot, PyTopologyDiff, TopologySnapshot, TopologyDiff, TopologyMetadata, TopologyConfig};
+use crate::api::request::{
+    PyTopologyDiff, PyTopologySnapshot, TopologyConfig, TopologyDiff, TopologyMetadata,
+    TopologySnapshot,
+};
 
 // ============================================================================
 // Configuration Types
@@ -74,7 +81,10 @@ pub struct PyNodeDefinition {
 impl PyNodeDefinition {
     #[new]
     fn new(id: String, memory_lifetime_t2: f64) -> Self {
-        Self { id, memory_lifetime_t2 }
+        Self {
+            id,
+            memory_lifetime_t2,
+        }
     }
 }
 
@@ -202,7 +212,13 @@ pub struct PyEntanglementRequest {
 #[pymethods]
 impl PyEntanglementRequest {
     #[new]
-    fn new(from_node: String, to: String, fidelity_target: f64, max_latency_ms: f64, strategy: Option<PyStrategyType>) -> Self {
+    fn new(
+        from_node: String,
+        to: String,
+        fidelity_target: f64,
+        max_latency_ms: f64,
+        strategy: Option<PyStrategyType>,
+    ) -> Self {
         Self {
             from_node,
             to,
@@ -228,7 +244,12 @@ pub struct PySimulationResult {
 #[pymethods]
 impl PySimulationResult {
     #[new]
-    fn new(success: bool, latency_ms: f64, final_fidelity: f64, execution_path: Vec<String>) -> Self {
+    fn new(
+        success: bool,
+        latency_ms: f64,
+        final_fidelity: f64,
+        execution_path: Vec<String>,
+    ) -> Self {
         Self {
             success,
             latency_ms,
@@ -246,7 +267,7 @@ impl PySimulationResult {
 #[derive(Clone)]
 pub struct PyMonteCarloContext {
     #[pyo3(get, set)]
-    pub nodes: Vec<(String, f64)>,       // (id, t2_lifetime)
+    pub nodes: Vec<(String, f64)>, // (id, t2_lifetime)
     #[pyo3(get, set)]
     pub links: Vec<(String, String, f64, f64, f64)>, // (from, to, distance_km, base_fidelity, rate_hz)
     #[pyo3(get, set)]
@@ -258,7 +279,7 @@ pub struct PyMonteCarloContext {
     #[pyo3(get, set)]
     pub max_latency_ms: f64,
     #[pyo3(get, set)]
-    pub strategy: Option<u8>,             // 0=LowestLatency, 1=HighestFidelity, 2=HighestSuccess, None=default
+    pub strategy: Option<u8>, // 0=LowestLatency, 1=HighestFidelity, 2=HighestSuccess, None=default
     #[pyo3(get, set)]
     pub seed: Option<u64>,
     #[pyo3(get, set)]
@@ -278,7 +299,11 @@ impl PyMonteCarloContext {
             // Node-level perturbations
             p if p.starts_with("node[") => {
                 let mut nodes = self.nodes.clone();
-                let parts: Vec<&str> = p.trim_start_matches("node[").trim_end_matches(']').split(',').collect();
+                let parts: Vec<&str> = p
+                    .trim_start_matches("node[")
+                    .trim_end_matches(']')
+                    .split(',')
+                    .collect();
                 if parts.len() == 2 {
                     let field = parts[1];
                     if let Ok(idx) = parts[0].parse::<usize>() {
@@ -290,12 +315,19 @@ impl PyMonteCarloContext {
                         }
                     }
                 }
-                Self { nodes, ..self.clone() }
+                Self {
+                    nodes,
+                    ..self.clone()
+                }
             }
             // Link-level perturbations
             p if p.starts_with("link[") => {
                 let mut links = self.links.clone();
-                let parts: Vec<&str> = p.trim_start_matches("link[").trim_end_matches(']').split(',').collect();
+                let parts: Vec<&str> = p
+                    .trim_start_matches("link[")
+                    .trim_end_matches(']')
+                    .split(',')
+                    .collect();
                 if parts.len() == 3 {
                     let field = parts[1];
                     if let Ok(idx) = parts[0].parse::<usize>() {
@@ -309,12 +341,18 @@ impl PyMonteCarloContext {
                         }
                     }
                 }
-                Self { links, ..self.clone() }
+                Self {
+                    links,
+                    ..self.clone()
+                }
             }
             // Global perturbations
             "alpha_loss_db_km" => {
                 let new_alpha = 0.2 * multiplier; // base alpha is 0.2 dB/km
-                Self { baseline_purify_factor: new_alpha / 10.0, ..self.clone() }
+                Self {
+                    baseline_purify_factor: new_alpha / 10.0,
+                    ..self.clone()
+                }
             }
             _ => self.clone(),
         }
@@ -333,23 +371,29 @@ impl PyMonteCarloContext {
 
         let mut engine = crate::engine::QNetEngine::new(Some(config));
 
-        let nodes = self.nodes.iter()
+        let nodes = self
+            .nodes
+            .iter()
             .map(|(id, t2)| crate::api::request::NodeDefinition {
                 id: id.clone(),
                 memory_lifetime_t2: *t2,
             })
             .collect();
 
-        let links = self.links.iter()
-            .map(|(from, to, dist, fid, rate)| crate::api::request::LinkDefinition {
-                from_node: from.clone(),
-                to: to.clone(),
-                distance_km: *dist,
-                base_fidelity: *fid,
-                generation_rate_hz: *rate,
-                link_type: crate::api::request::LinkType::default(),
-                satellite_conditions: None,
-            })
+        let links = self
+            .links
+            .iter()
+            .map(
+                |(from, to, dist, fid, rate)| crate::api::request::LinkDefinition {
+                    from_node: from.clone(),
+                    to: to.clone(),
+                    distance_km: *dist,
+                    base_fidelity: *fid,
+                    generation_rate_hz: *rate,
+                    link_type: crate::api::request::LinkType::default(),
+                    satellite_conditions: None,
+                },
+            )
             .collect();
 
         engine.define_network(crate::api::request::NetworkTopologyPayload { nodes, links });
@@ -359,17 +403,17 @@ impl PyMonteCarloContext {
             to: self.to_node.clone(),
             fidelity_target: self.fidelity_target,
             max_latency_ms: self.max_latency_ms,
-            strategy: self.strategy.map(|s| {
-                match s {
-                    0 => crate::routing::strategy::StrategyType::LowestLatency,
-                    1 => crate::routing::strategy::StrategyType::HighestFidelity,
-                    2 => crate::routing::strategy::StrategyType::HighestSuccess,
-                    _ => crate::routing::strategy::StrategyType::LowestLatency,
-                }
+            strategy: self.strategy.map(|s| match s {
+                0 => crate::routing::strategy::StrategyType::LowestLatency,
+                1 => crate::routing::strategy::StrategyType::HighestFidelity,
+                2 => crate::routing::strategy::StrategyType::HighestSuccess,
+                _ => crate::routing::strategy::StrategyType::LowestLatency,
             }),
         };
 
-        engine.simulate(req, runs, Some(seed)).empirical_success_rate
+        engine
+            .simulate(req, runs, Some(seed))
+            .empirical_success_rate
     }
 
     /// Compute symmetric impact score for one parameter.
@@ -385,7 +429,7 @@ impl PyMonteCarloContext {
         seed_up: u64,
     ) -> PyResult<Option<f64>> {
         let rate_down = self.with_mutated(param, -1).run_trial(runs, seed_down);
-        let rate_up   = self.with_mutated(param,  1).run_trial(runs, seed_up);
+        let rate_up = self.with_mutated(param, 1).run_trial(runs, seed_up);
 
         if baseline < 0.01 {
             // Zero or near-zero baseline: cannot compute meaningful relative impact.
@@ -393,10 +437,9 @@ impl PyMonteCarloContext {
             // neutral score — sensitivity_analysis() should never return an empty dict.
             Ok(Some(0.0))
         } else {
-            Ok(Some((
-                (rate_down - baseline).abs()
-                 + (rate_up   - baseline).abs()
-            ) / baseline))
+            Ok(Some(
+                ((rate_down - baseline).abs() + (rate_up - baseline).abs()) / baseline,
+            ))
         }
     }
 }
@@ -449,10 +492,11 @@ impl PyMonteCarloStats {
     /// Returns a dict sorted by absolute impact (descending):
     ///   {"memory_lifetime_t2:node_A": 0.34, "base_fidelity:link_0->link_B": 0.28, ...}
     fn sensitivity_analysis(&self, seed_base: u64) -> PyResult<PyObject> {
-        let ctx = self._context.as_ref()
-            .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                "No simulation context available. Pass store_context=True to simulate()."
-            ))?;
+        let ctx = self._context.as_ref().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "No simulation context available. Pass store_context=True to simulate().",
+            )
+        })?;
 
         let baseline = self.empirical_success_rate;
         let trial_runs = (ctx.nodes.len() * 50).max(200); // floor at 200 for small networks
@@ -463,7 +507,10 @@ impl PyMonteCarloStats {
         for (i, (node_id, _)) in ctx.nodes.iter().enumerate() {
             if let Some(impact) = ctx.param_impact(
                 &format!("node[{},t2]", i),
-                baseline, trial_runs, seed, seed + 1,
+                baseline,
+                trial_runs,
+                seed,
+                seed + 1,
             )? {
                 entries.push((format!("memory_lifetime_t2:{}", node_id), impact));
             }
@@ -477,11 +524,14 @@ impl PyMonteCarloStats {
             for (field, label) in &[
                 ("distance", "distance_km"),
                 ("fidelity", "base_fidelity"),
-                ("rate",     "generation_rate_hz"),
+                ("rate", "generation_rate_hz"),
             ] {
                 if let Some(impact) = ctx.param_impact(
                     &format!("link[{},{}]", i, field),
-                    baseline, trial_runs, seed, seed + 1,
+                    baseline,
+                    trial_runs,
+                    seed,
+                    seed + 1,
                 )? {
                     entries.push((format!("{}:{}", label, link_key), impact));
                 }
@@ -490,7 +540,9 @@ impl PyMonteCarloStats {
         }
 
         // Global alpha loss — always included (returns 0.0 for near-zero baselines).
-        if let Ok(Some(v)) = ctx.param_impact("alpha_loss_db_km", baseline, trial_runs, seed, seed + 1) {
+        if let Ok(Some(v)) =
+            ctx.param_impact("alpha_loss_db_km", baseline, trial_runs, seed, seed + 1)
+        {
             entries.push(("alpha_loss_db_km".to_string(), v));
         }
 
@@ -518,18 +570,23 @@ pub struct PyStrategyType(pub crate::routing::strategy::StrategyType);
 #[pymethods]
 impl PyStrategyType {
     #[classattr]
-    const LowestLatency: PyStrategyType = PyStrategyType(crate::routing::strategy::StrategyType::LowestLatency);
+    const LowestLatency: PyStrategyType =
+        PyStrategyType(crate::routing::strategy::StrategyType::LowestLatency);
 
     #[classattr]
-    const HighestFidelity: PyStrategyType = PyStrategyType(crate::routing::strategy::StrategyType::HighestFidelity);
+    const HighestFidelity: PyStrategyType =
+        PyStrategyType(crate::routing::strategy::StrategyType::HighestFidelity);
 
     #[classattr]
-    const HighestSuccess: PyStrategyType = PyStrategyType(crate::routing::strategy::StrategyType::HighestSuccess);
+    const HighestSuccess: PyStrategyType =
+        PyStrategyType(crate::routing::strategy::StrategyType::HighestSuccess);
 
     fn __repr__(&self) -> String {
         match self.0 {
             crate::routing::strategy::StrategyType::LowestLatency => "StrategyType.LowestLatency",
-            crate::routing::strategy::StrategyType::HighestFidelity => "StrategyType.HighestFidelity",
+            crate::routing::strategy::StrategyType::HighestFidelity => {
+                "StrategyType.HighestFidelity"
+            }
             crate::routing::strategy::StrategyType::HighestSuccess => "StrategyType.HighestSuccess",
         }
         .to_string()

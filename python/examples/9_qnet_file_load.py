@@ -1,7 +1,7 @@
 """Load a .qnet topology file and run simulation — no manual NodeDefinition / LinkDefinition needed."""
 
 import os
-from qnet_core import from_qnet_file, validate
+from qnet_core import from_qnet_file, validate, PyQNetFile
 
 base = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,7 +22,7 @@ stats = engine.simulate(
     runs=100,
 )
 
-print(f"\nLoaded network_v1.qnet (100 km fiber, base_fidelity=0.9):")
+print("\nLoaded network_v1.qnet (100 km fiber, base_fidelity=0.9):")
 print(f"  Success rate:   {stats.empirical_success_rate:.2%}")
 print(f"  Mean latency:   {stats.mean_latency_ms:.2f} ms")
 print(f"  Mean fidelity:  {stats.mean_fidelity:.4f}")
@@ -38,14 +38,12 @@ stats = engine.simulate(
     max_latency_ms=5000.0,
     runs=100,
 )
-print(f"\nLoaded toronto_london.qnet (4-node hybrid satellite/fiber):")
+print("\nLoaded toronto_london.qnet (4-node hybrid satellite/fiber):")
 print(f"  Success rate:   {stats.empirical_success_rate:.2%}")
 print(f"  Mean latency:   {stats.mean_latency_ms:.2f} ms")
 print(f"  Mean fidelity:  {stats.mean_fidelity:.4f}")
 
 # --- Round-trip: save a programmatic topology, reload it ---
-from qnet_core import PyQNetFile
-
 roundtrip_path = os.path.join(base, "tmp_roundtrip.qnet")
 f = PyQNetFile("my_custom_network")
 f.add_node("alpha", memory_lifetime_ms=200.0)
@@ -59,7 +57,7 @@ stats = engine2.simulate(
     fidelity_target=0.85, max_latency_ms=500.0,
     runs=100,
 )
-print(f"\nRound-trip (saved -> loaded):")
+print("\nRound-trip (saved -> loaded):")
 print(f"  Success rate:   {stats.empirical_success_rate:.2%}")
 print(f"  Mean latency:   {stats.mean_latency_ms:.2f} ms")
 

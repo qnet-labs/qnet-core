@@ -1,8 +1,10 @@
 use pyo3::prelude::*;
 
-use super::types::*;
 use super::qnet_io::PyQNetFile;
-use crate::api::request::{LinkDefinition, LinkType, NetworkTopologyPayload, NodeDefinition, SatelliteConditions};
+use super::types::*;
+use crate::api::request::{
+    LinkDefinition, LinkType, NetworkTopologyPayload, NodeDefinition, SatelliteConditions,
+};
 use crate::engine::QNetEngine;
 
 // ============================================================================
@@ -13,7 +15,11 @@ use crate::engine::QNetEngine;
 pub struct PyQNetEngine {
     inner: QNetEngine,
     /// Snapshot of the last network + config for post-hoc analysis.
-    topology_snapshot: Option<(Vec<PyNodeDefinition>, Vec<PyLinkDefinition>, PySimulationConfig)>,
+    topology_snapshot: Option<(
+        Vec<PyNodeDefinition>,
+        Vec<PyLinkDefinition>,
+        PySimulationConfig,
+    )>,
 }
 
 #[pymethods]
@@ -97,100 +103,125 @@ impl PyQNetEngine {
     }
 
     fn simulate(
-    &self,
-    from_node: String,
-    to: String,
-    fidelity_target: f64,
-    max_latency_ms: f64,
-    runs: usize,
-    strategy: Option<PyStrategyType>,
-    seed: Option<u64>,
-) -> PyResult<PyMonteCarloStats> {
-    let network = self.inner.network.as_ref()
-        .ok_or_else(|| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
-            "No network defined. Call define_network() first."
-        ))?;
+        &self,
+        from_node: String,
+        to: String,
+        fidelity_target: f64,
+        max_latency_ms: f64,
+        runs: usize,
+        strategy: Option<PyStrategyType>,
+        seed: Option<u64>,
+    ) -> PyResult<PyMonteCarloStats> {
+        let network = self.inner.network.as_ref().ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                "No network defined. Call define_network() first.",
+            )
+        })?;
 
-    let req = crate::api::request::EntanglementRequest {
-        from_node: from_node.clone(),
-        to: to.clone(),
-        fidelity_target,
-        max_latency_ms,
-        strategy: strategy.map(|s| s.into_strategy_type()),
-    };
+        let req = crate::api::request::EntanglementRequest {
+            from_node: from_node.clone(),
+            to: to.clone(),
+            fidelity_target,
+            max_latency_ms,
+            strategy: strategy.map(|s| s.into_strategy_type()),
+        };
 
-    let stats = self.inner.simulate(req, runs, seed);
+        let stats = self.inner.simulate(req, runs, seed);
 
-    // ── Build context for sensitivity_analysis() ──────────────────────────
-    let context = PyMonteCarloContext {
-        nodes: network.nodes.iter()
-            .map(|(id, node)| (id.clone(), node.t2_lifetime))
-            .collect(),
-        links: network.links.iter()
-            .map(|l| (
-                l.from.clone(),
-                l.to.clone(),
-                l.distance,
-                l.base_fidelity,
-                l.rate_hz,
-            ))
-            .collect(),
-        from_node,
-        to_node: to,
-        fidelity_target,
-        max_latency_ms,
-        strategy: strategy.map(|s| s.to_u8()),
-        seed,
-        total_time_cutoff_ms: self.inner.config.total_time_cutoff_ms,
-        step_resolution_ms: self.inner.config.step_resolution_ms,
-        baseline_purify_factor: self.inner.config.physical.baseline_purify_factor,
-    };
-    // ─────────────────────────────────────────────────────────────────────
+        // ── Build context for sensitivity_analysis() ──────────────────────────
+        let context = PyMonteCarloContext {
+            nodes: network
+                .nodes
+                .iter()
+                .map(|(id, node)| (id.clone(), node.t2_lifetime))
+                .collect(),
+            links: network
+                .links
+                .iter()
+                .map(|l| {
+                    (
+                        l.from.clone(),
+                        l.to.clone(),
+                        l.distance,
+                        l.base_fidelity,
+                        l.rate_hz,
+                    )
+                })
+                .collect(),
+            from_node,
+            to_node: to,
+            fidelity_target,
+            max_latency_ms,
+            strategy: strategy.map(|s| s.to_u8()),
+            seed,
+            total_time_cutoff_ms: self.inner.config.total_time_cutoff_ms,
+            step_resolution_ms: self.inner.config.step_resolution_ms,
+            baseline_purify_factor: self.inner.config.physical.baseline_purify_factor,
+        };
+        // ─────────────────────────────────────────────────────────────────────
 
-    Ok(PyMonteCarloStats {
-        total_runs: stats.total_runs,
-        empirical_success_rate: stats.empirical_success_rate,
-        mean_latency_ms: stats.mean_latency_ms,
-        mean_fidelity: stats.mean_fidelity,
-        aggregate_congestion_drops: stats.aggregate_congestion_drops,
-        link_utilization_heatmap: stats.link_utilization_heatmap,
-        _context: Some(context),
-    })
-}
+        Ok(PyMonteCarloStats {
+            total_runs: stats.total_runs,
+            empirical_success_rate: stats.empirical_success_rate,
+            mean_latency_ms: stats.mean_latency_ms,
+            mean_fidelity: stats.mean_fidelity,
+            aggregate_congestion_drops: stats.aggregate_congestion_drops,
+            link_utilization_heatmap: stats.link_utilization_heatmap,
+            _context: Some(context),
+        })
+    }
 
     /// Load a topology from a loaded .qnet file directly into the engine.
     /// Bridges both type systems — no manual NodeDefinition / LinkDefinition needed.
     #[pyo3(name = "define_network_from_qnet")]
     fn define_network_from_qnet(&mut self, qf: PyQNetFile) {
         let payload = crate::api::request::NetworkTopologyPayload {
-            nodes: qf.nodes.into_iter().map(|n| {
-                crate::api::request::NodeDefinition {
-                    id: n.id,
-                    // .qnet uses milliseconds; engine expects seconds (t2 lifetime)
-                    memory_lifetime_t2: n.memory_lifetime_ms.map(|ms| ms / 1000.0).unwrap_or(1.0),
-                }
-            }).collect(),
-            links: qf.links.into_iter().map(|l| {
-                let link_type = l.link_type.map(|lt| match lt.0 {
-                    crate::api::request::QNetLinkType::Fiber => crate::api::request::LinkType::Fiber,
-                    crate::api::request::QNetLinkType::Satellite => crate::api::request::LinkType::Satellite,
-                }).unwrap_or(crate::api::request::LinkType::Fiber);
-                let satellite_conditions = l.satellite.map(|sc| {
-                    crate::api::request::SatelliteConditions {
-                        visibility: sc.visibility,
-                        weather_factor: sc.weather_factor,
+            nodes: qf
+                .nodes
+                .into_iter()
+                .map(|n| {
+                    crate::api::request::NodeDefinition {
+                        id: n.id,
+                        // .qnet uses milliseconds; engine expects seconds (t2 lifetime)
+                        memory_lifetime_t2: n
+                            .memory_lifetime_ms
+                            .map(|ms| ms / 1000.0)
+                            .unwrap_or(1.0),
                     }
-                });
-                crate::api::request::LinkDefinition {
-                    from_node: l.src,
-                    to: l.to,
-                    distance_km: l.distance_km,
-                    base_fidelity: l.base_fidelity,
-                    generation_rate_hz: l.generation_rate_hz,
-                    link_type,
-                    satellite_conditions,
-                }
-            }).collect(),
+                })
+                .collect(),
+            links: qf
+                .links
+                .into_iter()
+                .map(|l| {
+                    let link_type = l
+                        .link_type
+                        .map(|lt| match lt.0 {
+                            crate::api::request::QNetLinkType::Fiber => {
+                                crate::api::request::LinkType::Fiber
+                            }
+                            crate::api::request::QNetLinkType::Satellite => {
+                                crate::api::request::LinkType::Satellite
+                            }
+                        })
+                        .unwrap_or(crate::api::request::LinkType::Fiber);
+                    let satellite_conditions =
+                        l.satellite
+                            .map(|sc| crate::api::request::SatelliteConditions {
+                                visibility: sc.visibility,
+                                weather_factor: sc.weather_factor,
+                            });
+                    crate::api::request::LinkDefinition {
+                        from_node: l.src,
+                        to: l.to,
+                        distance_km: l.distance_km,
+                        base_fidelity: l.base_fidelity,
+                        generation_rate_hz: l.generation_rate_hz,
+                        link_type,
+                        satellite_conditions,
+                    }
+                })
+                .collect(),
         };
         self.inner.define_network(payload);
     }
@@ -201,36 +232,49 @@ impl PyQNetEngine {
 #[pyfunction]
 #[pyo3(name = "from_qnet_file")]
 pub(crate) fn from_qnet_file_py(filepath: &str) -> PyResult<PyQNetEngine> {
-    let qf = crate::io::load_qnet_file(filepath)
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("Failed to load {}: {}", filepath, e)))?;
+    let qf = crate::io::load_qnet_file(filepath).map_err(|e| {
+        PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
+            "Failed to load {}: {}",
+            filepath, e
+        ))
+    })?;
 
     let payload = NetworkTopologyPayload {
-        nodes: qf.nodes.into_iter().map(|n| NodeDefinition {
-            id: n.id,
-            memory_lifetime_t2: n.memory_lifetime_ms.map(|ms| ms / 1000.0).unwrap_or(1.0),
-        }).collect(),
-        links: qf.links.into_iter().map(|l| {
-            // QNetLinkType is a plain enum (not wrapped), so match directly
-            let link_type = l.link_type.map(|lt| match lt {
-                crate::api::request::QNetLinkType::Fiber => LinkType::Fiber,
-                crate::api::request::QNetLinkType::Satellite => LinkType::Satellite,
-            }).unwrap_or(LinkType::Fiber);
-            let satellite_conditions = l.satellite.map(|sc| {
-                SatelliteConditions {
+        nodes: qf
+            .nodes
+            .into_iter()
+            .map(|n| NodeDefinition {
+                id: n.id,
+                memory_lifetime_t2: n.memory_lifetime_ms.map(|ms| ms / 1000.0).unwrap_or(1.0),
+            })
+            .collect(),
+        links: qf
+            .links
+            .into_iter()
+            .map(|l| {
+                // QNetLinkType is a plain enum (not wrapped), so match directly
+                let link_type = l
+                    .link_type
+                    .map(|lt| match lt {
+                        crate::api::request::QNetLinkType::Fiber => LinkType::Fiber,
+                        crate::api::request::QNetLinkType::Satellite => LinkType::Satellite,
+                    })
+                    .unwrap_or(LinkType::Fiber);
+                let satellite_conditions = l.satellite.map(|sc| SatelliteConditions {
                     visibility: sc.visibility,
                     weather_factor: sc.weather_factor,
+                });
+                LinkDefinition {
+                    from_node: l.from, // QNetLink uses "from" (not "src")
+                    to: l.to,
+                    distance_km: l.distance_km,
+                    base_fidelity: l.base_fidelity,
+                    generation_rate_hz: l.generation_rate_hz,
+                    link_type,
+                    satellite_conditions,
                 }
-            });
-            LinkDefinition {
-                from_node: l.from,  // QNetLink uses "from" (not "src")
-                to: l.to,
-                distance_km: l.distance_km,
-                base_fidelity: l.base_fidelity,
-                generation_rate_hz: l.generation_rate_hz,
-                link_type,
-                satellite_conditions,
-            }
-        }).collect(),
+            })
+            .collect(),
     };
 
     let config = qf.config.as_ref().map(|c| crate::config::SimulationConfig {
@@ -244,7 +288,10 @@ pub(crate) fn from_qnet_file_py(filepath: &str) -> PyResult<PyQNetEngine> {
 
     let mut engine = QNetEngine::new(config);
     engine.define_network(payload);
-    Ok(PyQNetEngine { inner: engine, topology_snapshot: None })
+    Ok(PyQNetEngine {
+        inner: engine,
+        topology_snapshot: None,
+    })
 }
 
 // ============================================================================
@@ -265,22 +312,30 @@ pub(crate) fn generate_topology(name: &str) -> PyResult<PyNetworkTopologyPayload
     };
 
     Ok(PyNetworkTopologyPayload {
-        nodes: payload.nodes.into_iter().map(|n| PyNodeDefinition {
-            id: n.id,
-            memory_lifetime_t2: n.memory_lifetime_t2,
-        }).collect(),
-        links: payload.links.into_iter().map(|l| PyLinkDefinition {
-            from_node: l.from_node,
-            to: l.to,
-            distance_km: l.distance_km,
-            base_fidelity: l.base_fidelity,
-            generation_rate_hz: l.generation_rate_hz,
-            link_type: PyLinkType(l.link_type),
-            satellite_conditions: l.satellite_conditions.map(|sc| PySatelliteConditions {
-                visibility: sc.visibility,
-                weather_factor: sc.weather_factor,
-            }),
-        }).collect(),
+        nodes: payload
+            .nodes
+            .into_iter()
+            .map(|n| PyNodeDefinition {
+                id: n.id,
+                memory_lifetime_t2: n.memory_lifetime_t2,
+            })
+            .collect(),
+        links: payload
+            .links
+            .into_iter()
+            .map(|l| PyLinkDefinition {
+                from_node: l.from_node,
+                to: l.to,
+                distance_km: l.distance_km,
+                base_fidelity: l.base_fidelity,
+                generation_rate_hz: l.generation_rate_hz,
+                link_type: PyLinkType(l.link_type),
+                satellite_conditions: l.satellite_conditions.map(|sc| PySatelliteConditions {
+                    visibility: sc.visibility,
+                    weather_factor: sc.weather_factor,
+                }),
+            })
+            .collect(),
     })
 }
 
@@ -300,7 +355,11 @@ pub struct TopologyEndpoints {
 impl TopologyEndpoints {
     #[new]
     fn new(topology_name: String, from_node: String, to_node: String) -> Self {
-        Self { topology_name, from_node, to_node }
+        Self {
+            topology_name,
+            from_node,
+            to_node,
+        }
     }
 }
 
@@ -354,7 +413,10 @@ pub(crate) fn compare_topologies(
         ("repeater_chain", TopologyType::RepeaterChain { length: 4 }),
         ("hybrid_satellite_fiber", TopologyType::HybridSatelliteFiber),
         ("hybrid", TopologyType::HybridSatelliteFiber),
-    ].iter().cloned().collect();
+    ]
+    .iter()
+    .cloned()
+    .collect();
 
     // Validate that all endpoints reference known topologies
     for ep in &endpoints {
@@ -366,11 +428,13 @@ pub(crate) fn compare_topologies(
     }
 
     // Run simulation for each endpoint with correct source/target for that topology
-    for (name, from_node, to_node) in endpoints.iter().map(|ep| (
-        ep.topology_name.clone(),
-        ep.from_node.clone(),
-        ep.to_node.clone(),
-    )) {
+    for (name, from_node, to_node) in endpoints.iter().map(|ep| {
+        (
+            ep.topology_name.clone(),
+            ep.from_node.clone(),
+            ep.to_node.clone(),
+        )
+    }) {
         let topology_type = topology_map.get(name.as_str());
 
         if let Some(t) = topology_type {
@@ -379,20 +443,16 @@ pub(crate) fn compare_topologies(
             // Validate that source/target nodes exist in the generated topology (before moving payload)
             let node_ids: Vec<&str> = payload.nodes.iter().map(|n| n.id.as_str()).collect();
             if !node_ids.contains(&from_node.as_str()) {
-                return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                    format!(
-                        "Source node '{}' not found in topology '{}'. Available nodes: {:?}",
-                        from_node, name, node_ids
-                    )
-                ));
+                return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                    "Source node '{}' not found in topology '{}'. Available nodes: {:?}",
+                    from_node, name, node_ids
+                )));
             }
             if !node_ids.contains(&to_node.as_str()) {
-                return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                    format!(
-                        "Target node '{}' not found in topology '{}'. Available nodes: {:?}",
-                        to_node, name, node_ids
-                    )
-                ));
+                return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                    "Target node '{}' not found in topology '{}'. Available nodes: {:?}",
+                    to_node, name, node_ids
+                )));
             }
 
             // Create engine with this topology (payload moved here)
@@ -435,7 +495,8 @@ pub(crate) fn compare_topologies(
     let summary = generate_comparison_summary(&results, &recommended);
 
     // Use the first endpoint's source/target for report metadata
-    let (source_node, target_node) = endpoints.first()
+    let (source_node, target_node) = endpoints
+        .first()
         .map(|ep| (ep.from_node.clone(), ep.to_node.clone()))
         .unwrap_or_else(|| (String::new(), String::new()));
     Ok(TopologyComparisonReport {
@@ -463,8 +524,14 @@ fn generate_comparison_summary(results: &[TopologyComparisonResult], recommended
     );
 
     // Find best success rate and best latency
-    let best_success = results.iter().max_by(|a, b| a.success_rate.partial_cmp(&b.success_rate).unwrap()).unwrap();
-    let best_latency = results.iter().min_by(|a, b| a.mean_latency_ms.partial_cmp(&b.mean_latency_ms).unwrap()).unwrap();
+    let best_success = results
+        .iter()
+        .max_by(|a, b| a.success_rate.partial_cmp(&b.success_rate).unwrap())
+        .unwrap();
+    let best_latency = results
+        .iter()
+        .min_by(|a, b| a.mean_latency_ms.partial_cmp(&b.mean_latency_ms).unwrap())
+        .unwrap();
 
     summary.push_str(&format!(
         "Best success rate: {:.0$} ({}), Best latency: {:.2}ms ({}).",
@@ -475,7 +542,8 @@ fn generate_comparison_summary(results: &[TopologyComparisonResult], recommended
     ));
 
     // Add fidelity info
-    let avg_fidelity: f64 = results.iter().map(|r| r.mean_fidelity).sum::<f64>() / results.len() as f64;
+    let avg_fidelity: f64 =
+        results.iter().map(|r| r.mean_fidelity).sum::<f64>() / results.len() as f64;
     summary.push_str(&format!(" Average fidelity: {:.4}.", avg_fidelity));
 
     summary

@@ -1,6 +1,7 @@
 """Test with custom simulation config."""
-print("Testing with custom config...")
 from qnet_core import QNetEngine, NodeDefinition, LinkDefinition, StrategyType
+
+print("Testing with custom config...")
 # Create engine with custom config
 config = QNetEngine.__new__(QNetEngine)   # Placeholder
 # Note: Custom config would require access to SimulationConfig class

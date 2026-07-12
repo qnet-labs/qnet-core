@@ -60,22 +60,28 @@ impl QuantumNetwork {
         Self {
             nodes: HashMap::new(),
             links: Vec::new(),
-         }
-      }
+        }
+    }
 
     pub fn add_node(&mut self, id: &str, t2: f64) {
-        self.nodes.insert(id.to_string(), InternalNode { id: id.to_string(), t2_lifetime: t2 });
-      }
+        self.nodes.insert(
+            id.to_string(),
+            InternalNode {
+                id: id.to_string(),
+                t2_lifetime: t2,
+            },
+        );
+    }
 
     pub fn add_link(
-         &mut self,
+        &mut self,
         from: &str,
         to: &str,
         dist: f64,
         fidelity: f64,
         rate: f64,
         link_type: super::api::request::LinkType,
-     ) {
+    ) {
         self.links.push(InternalLink {
             from: from.to_string(),
             to: to.to_string(),
@@ -83,6 +89,6 @@ impl QuantumNetwork {
             base_fidelity: fidelity,
             rate_hz: rate,
             link_type,
-          });
-       }
+        });
+    }
 }

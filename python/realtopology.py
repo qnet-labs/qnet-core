@@ -1,25 +1,6 @@
-import sys
-from qnet_core import (
-    QNetEngine,
-    StrategyType,
-    NodeDefinition,
-    LinkDefinition,
-    EntanglementRequest,
-    generate_topology,
-    compare_topologies,
-    LinkType,
-    SatelliteConditions,
-    load,
-    save,
-    validate,
-    diff,
-    PyQNetFile,
-    PyQNetConfig,
-    PyQNetConstraints,
-)
-
-
 """Test using generate_topology function with different topologies."""
+from qnet_core import QNetEngine, StrategyType, generate_topology
+
 print("Testing generate_topology function...")
 
 # Generate a hybrid satellite-fiber topology

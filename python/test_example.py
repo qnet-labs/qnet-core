@@ -30,15 +30,11 @@ from qnet_core import (
     StrategyType,
     NodeDefinition,
     LinkDefinition,
-    EntanglementRequest,
     TopologyEndpoints,
     generate_topology,
     compare_topologies,
     LinkType,
     SatelliteConditions,
-    load,
-    save,
-    diff_topologies,
     from_qnet_file,
     validate,
 )
@@ -301,8 +297,8 @@ def test_custom_config():
     """Test with custom simulation config."""
     print("Testing with custom config...")
 
-    # Create engine with custom config
-    config = QNetEngine.__new__(QNetEngine)   # Placeholder
+    # Create engine with custom config (placeholder — not yet wired to SimulationConfig)
+    _config = QNetEngine.__new__(QNetEngine)   # Placeholder
     # Note: Custom config would require access to SimulationConfig class
     # For now, we use defaults
 
@@ -393,7 +389,7 @@ def test_satellite_link_conditions():
 
     # Calculate effective rate considering conditions
     effective_rate = satellite_link.satellite_conditions.effective_rate(50.0)
-    print(f"  Base rate: 50.0 Hz")
+    print("  Base rate: 50.0 Hz")
     print(f"  Effective rate (with conditions): {effective_rate:.2f} Hz")
 
     engine.define_network(
@@ -486,8 +482,8 @@ def test_qnet_file_format():
     print("Testing .qnet file format creation...")
 
     from qnet_core import (
-        PyQNetFile, PyQNetNode, PyQNetLink, PyQNetConfig, PyQNetConstraints,
-        PyQNetMetadata, PyQNetNodeType, PyQNetLinkType, PyQNetSatelliteExtension,
+        PyQNetFile, PyQNetConfig, PyQNetConstraints,
+        PyQNetNodeType, PyQNetLinkType, PyQNetSatelliteExtension,
         load_qnet_file,
     )
 
@@ -551,7 +547,7 @@ def test_qnet_validate():
     """Test .qnet file validation."""
     print("Testing .qnet file validation...")
 
-    from qnet_core import validate, PyQNetFile, PyQNetNodeType
+    from qnet_core import PyQNetFile, PyQNetNodeType
 
     base = _qnet_dir()
 
@@ -620,7 +616,7 @@ def test_qnet_validation_errors():
     except RuntimeError as e:
         assert "Validation failed" in str(e) or "Self-loop" in str(e), f"Expected validation error, got: {e}"
 
-    print(f"  invalid_network.qnet: correctly rejected with Self-loop error")
+    print("  invalid_network.qnet: correctly rejected with Self-loop error")
 
     # Also test that a valid file returns proper structured result (not just dict with errors)
     valid_result = validate(os.path.join(base, "valid_network.qnet"))
@@ -639,7 +635,7 @@ def test_define_network_from_qnet():
     """Test bridging .qnet format directly to the simulation engine — no manual NodeDefinition / LinkDefinition needed."""
     print("Testing define_network_from_qnet (bridge both type systems)...")
 
-    from qnet_core import load_qnet_file, save_topology, validate
+    from qnet_core import load_qnet_file
 
     base = _qnet_dir()
 
@@ -671,8 +667,6 @@ def test_from_qnet_file():
     """Test the one-liner 'from_file' pattern — load a .qnet file and start simulating in a single call."""
     print("Testing from_qnet_file (one-liner topology load)...")
 
-    from qnet_core import from_qnet_file
-
     base = _qnet_dir()
 
     # This is the "from_file" pattern — replaces 3 lines with 1:
@@ -691,7 +685,7 @@ def test_from_qnet_file():
         seed=42,  # deterministic
     )
 
-    print(f"  Loaded via from_qnet_file()")
+    print("  Loaded via from_qnet_file()")
     print(f"  Success rate: {stats.empirical_success_rate:.2%}")
     print(f"  Mean latency: {stats.mean_latency_ms:.2f} ms")
     print("  from_qnet_file verified OK")

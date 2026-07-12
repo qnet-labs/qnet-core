@@ -1,8 +1,7 @@
-
 """Test routing optimization prioritizing lowest latency across a multi-hop network."""
-print("Testing latency-optimized routing...")
-
 from qnet_core import QNetEngine, NodeDefinition, LinkDefinition, StrategyType
+
+print("Testing latency-optimized routing...")
 
 engine = QNetEngine()
 

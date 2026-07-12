@@ -2,8 +2,8 @@ use crate::api::request::EntanglementRequest;
 use crate::api::response::MonteCarloStats;
 use crate::config::SimulationConfig;
 use crate::network::QuantumNetwork;
-use crate::simulation::SimulationRuntime;
 use crate::scheduler::NetworkOrchestratorPolicy;
+use crate::simulation::SimulationRuntime;
 use rand::SeedableRng;
 use std::collections::HashMap;
 
@@ -31,7 +31,7 @@ impl MonteCarloSimulationEngine {
             let rng = seed.map(|s| rand::rngs::StdRng::seed_from_u64(s.wrapping_add(i as u64)));
 
             let res = orchestrator.coordinate_timeline(network, &mut runtime, &request, rng);
-            
+
             if res.success {
                 total_successes += 1;
                 total_fidelity += res.final_fidelity;
@@ -49,7 +49,11 @@ impl MonteCarloSimulationEngine {
             total_runs: runs,
             empirical_success_rate: (total_successes as f64) / runs_f,
             mean_latency_ms: total_latency / runs_f,
-            mean_fidelity: if total_successes > 0 { total_fidelity / (total_successes as f64) } else { 0.0 },
+            mean_fidelity: if total_successes > 0 {
+                total_fidelity / (total_successes as f64)
+            } else {
+                0.0
+            },
             aggregate_congestion_drops,
             link_utilization_heatmap: unified_heatmap,
         }
