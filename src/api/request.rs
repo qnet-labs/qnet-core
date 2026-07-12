@@ -390,32 +390,22 @@ impl std::str::FromStr for QNetVersion {
 }
 
 /// Node type for quantum network
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum QNetNodeType {
+    #[default]
     Ground,
     Satellite,
     Repeater,
 }
 
-impl Default for QNetNodeType {
-    fn default() -> Self {
-        QNetNodeType::Ground
-    }
-}
-
 /// Link type for qnet format
-#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum QNetLinkType {
+    #[default]
     Fiber,
     Satellite,
-}
-
-impl Default for QNetLinkType {
-    fn default() -> Self {
-        QNetLinkType::Fiber
-    }
 }
 
 /// Satellite extension for links

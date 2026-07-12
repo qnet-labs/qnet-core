@@ -33,6 +33,17 @@ bindings = "pyo3"
 
 [tool.mypy]
 strict = true
+exclude = [
+    "python/test_example.py",   # demo script — depends on untyped PyO3 module
+    "python/test.py",            # demo script — depends on untyped PyO3 module
+    "python/realtopology.py",    # demo script — depends on untyped PyO3 module
+    "python/examples/",          # all examples depend on untyped PyO3 module
+]
+
+# PyO3 compiled binary — no .pyi stubs; star imports from it are opaque
+[[tool.mypy.overrides]]
+module = ["qnet_core.qnet_core"]
+ignore_missing_imports = true
 
 [tool.ruff]
 target-version = "py38"

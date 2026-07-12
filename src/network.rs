@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct InternalNode {
+    #[allow(dead_code)] // used as the map key in lookups — field is the identifier
     pub id: String,
     pub t2_lifetime: f64,
 }
@@ -13,11 +14,13 @@ pub struct InternalLink {
     pub distance: f64,
     pub base_fidelity: f64,
     pub rate_hz: f64,
+    #[allow(dead_code)] // physics model — not wired into scheduler yet
     pub link_type: super::api::request::LinkType,
 }
 
 impl InternalLink {
     /// Calculate effective rate based on link type
+    #[allow(dead_code)] // physics model — not wired into scheduler yet
     pub fn effective_rate(&self) -> f64 {
         match self.link_type {
             super::api::request::LinkType::Fiber => self.rate_hz,
@@ -29,6 +32,7 @@ impl InternalLink {
     }
 
     /// Calculate effective fidelity based on link type physics
+    #[allow(dead_code)] // physics model — not wired into scheduler yet
     pub fn effective_fidelity(&self) -> f64 {
         match self.link_type {
             super::api::request::LinkType::Fiber => {

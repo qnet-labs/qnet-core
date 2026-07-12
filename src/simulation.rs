@@ -8,9 +8,8 @@ pub enum EventType {
         to: String,
         base_fidelity: f64,
     },
-    MemoryDecayDropout {
-        node_id: String,
-    },
+    #[allow(dead_code)] // wired into processing logic — dead_code fires in test builds
+    MemoryDecayDropout { node_id: String },
 }
 
 #[derive(Debug, Clone, PartialEq)]

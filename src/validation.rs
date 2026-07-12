@@ -118,7 +118,15 @@ impl ValidationResult {
             warnings: Vec::new(),
         }
     }
+}
 
+impl Default for ValidationResult {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl ValidationResult {
     pub fn add_error(&mut self, error: ValidationError) {
         self.errors.push(error);
         self.is_valid = false;

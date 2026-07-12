@@ -1,8 +1,11 @@
+/// Track qubit memory register capacity during simulation.
+#[allow(dead_code)] // not wired into scheduler yet — kept as public API scaffold
 pub struct MemoryRegisterTracker {
     pub allocated_qubits: usize,
     pub max_capacity: usize,
 }
 
+#[allow(dead_code)]
 impl MemoryRegisterTracker {
     pub fn new(max_capacity: usize) -> Self {
         Self {
@@ -11,6 +14,7 @@ impl MemoryRegisterTracker {
         }
     }
 
+    #[allow(dead_code)]
     pub fn try_buffer(&mut self) -> bool {
         if self.allocated_qubits < self.max_capacity {
             self.allocated_qubits += 1;

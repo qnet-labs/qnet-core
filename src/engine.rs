@@ -91,7 +91,7 @@ impl QNetEngine {
         };
 
         for node in &network.nodes {
-            snapshot.add_node(&node.0, node.1.t2_lifetime);
+            snapshot.add_node(node.0, node.1.t2_lifetime);
         }
         for link in &network.links {
             snapshot.add_link(
@@ -180,10 +180,9 @@ impl QNetEngine {
                 }
             }
         }
-        for (id, _) in &nodes2 {
-            if !nodes1.contains_key(id) {
-                diff.nodes_added.push(id.to_string());
-            }
+        for id in nodes2.keys() {
+            // node ID not present in source → newly added
+            diff.nodes_added.push(id.to_string());
         }
 
         // Build maps for links
@@ -193,17 +192,16 @@ impl QNetEngine {
             snapshot2.links.iter().map(|l| (l.link_key(), l)).collect();
 
         // Find link differences
-        for (key, link) in &links1 {
-            match links2.get(key) {
-                None => diff.links_removed.push(key.clone()),
-                Some(other) => {
-                    if link != other {
-                        diff.links_modified.push(key.clone());
-                    }
+        for key in links1.keys() {
+            if !links2.contains_key(key) {
+                diff.links_removed.push(key.clone());
+            } else if let (Some(l1), Some(l2)) = (links1.get(key), links2.get(key)) {
+                if l1 != l2 {
+                    diff.links_modified.push(key.clone());
                 }
             }
         }
-        for (key, _) in &links2 {
+        for key in links2.keys() {
             if !links1.contains_key(key) {
                 diff.links_added.push(key.clone());
             }

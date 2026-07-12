@@ -218,7 +218,7 @@ pub fn diff_qnet_files(
         }
     }
 
-    for (id, _) in &target_nodes {
+    for id in target_nodes.keys() {
         if !source_nodes.contains_key(id) {
             diff.nodes_added.push(id.to_string());
         }
@@ -241,7 +241,7 @@ pub fn diff_qnet_files(
         }
     }
 
-    for (key, _) in &target_links {
+    for key in target_links.keys() {
         if !source_links.contains_key(key) {
             diff.links_added.push(key.clone());
         }
