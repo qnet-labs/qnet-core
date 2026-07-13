@@ -51,7 +51,7 @@ jobs:
             rust_target: aarch64-unknown-linux-gnu
             maturin_name: manylinux_aarch64
           # macOS — x86_64
-          - os: macos-13
+          - os: macos-14
             rust_target: x86_64-apple-darwin
             maturin_name: macos_x86_64
           # macOS — Apple Silicon (aarch64)
@@ -74,7 +74,9 @@ jobs:
           # Linux builds get abi3 compatibility (unlimited Python version tag) from pyo3/abi3.
           args: --release --out wheels
 
-      - run: |
+      - name: Organize dist (bash on all platforms)
+        shell: bash
+        run: |
           mkdir -p dist/${{ matrix.target.maturin_name }}/
           for whl in wheels/*.whl; do
             mv "$whl" "dist/${{ matrix.target.maturin_name }}/"
