@@ -35,9 +35,13 @@ jobs:
           ruff check python/
           mypy python/
 
-  # ── Cross-platform wheel builds ──────────────────────────────────
+  # ── Cross-platform wheel builds + publish ────────────────────────
   rust-build:
     runs-on: ${{ matrix.target.os }}
+    permissions:
+      id-token: write
+      contents: read
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     strategy:
       fail-fast: false
       matrix:
@@ -66,30 +70,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build wheels
+      - name: Build wheel
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target.rust_target }}
           # No --interpreter on native runners — maturin auto-detects system Python.
           # Linux builds get abi3 compatibility (unlimited Python version tag) from pyo3/abi3.
-          args: --release --out wheels
+          args: --release --out dist
 
-      - name: Organize dist (bash on all platforms)
-        shell: bash
-        run: |
-          mkdir -p dist/${{ matrix.target.maturin_name }}/
-          for whl in wheels/*.whl; do
-            mv "$whl" "dist/${{ matrix.target.maturin_name }}/"
-          done
-
-      - uses: actions/upload-artifact@v4
+      - name: Publish wheel to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          name: wheels-${{ matrix.target.maturin_name }}
-          path: dist/
+          packages-dir: dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
 
-  # ── Build source distribution ────────────────────────────────────
+  # ── Build source distribution + publish ─────────────────────────
   sdist:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -97,26 +98,8 @@ jobs:
           python-version: "3.12"
       - run: pip install maturin build
       - run: maturin sdist --out dist/
-      - uses: actions/upload-artifact@v4
+      - name: Publish sdist to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          name: wheels-sdist
-          path: dist/
-
-  # ── Publish to PyPI ──────────────────────────────────────────────
-  publish:
-    needs: [rust-check, python-check, rust-build, sdist]
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          path: dist/
-          merge-multiple: true
-
-      - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
+          packages-dir: dist/
           password: ${{ secrets.PYPI_API_TOKEN }}
