@@ -106,6 +106,9 @@ jobs:
   publish:
     needs: [rust-check, python-check, rust-build, sdist]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/download-artifact@v4
