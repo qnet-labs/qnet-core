@@ -69,6 +69,9 @@ print(f"Success rate: {stats.empirical_success_rate:.2%}")
 - [Python API Reference](python/README.md) — complete type signatures and function docs
 - [Changelog](CHANGELOG.md) — version history
 
+## Examples
+[Example repo + Jupiter Notebooks](https://github.com/qnet-labs/qnet-examples)
+
 # Build and install in development mode
 maturin develop --features python
 ```
