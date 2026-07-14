@@ -24,17 +24,7 @@ Quantum network entanglement distribution simulator. Models quantum repeater net
 
 ```bash
 # Install build dependencies
-pip install maturin
-
-# Build and install in development mode
-maturin develop --features python
-```
-
-### Rust
-
-```bash
-cargo add qnet-core
-```
+pip install qnet-core
 
 ## Quick Start
 
@@ -79,8 +69,17 @@ print(f"Success rate: {stats.empirical_success_rate:.2%}")
 - [Python API Reference](python/README.md) — complete type signatures and function docs
 - [Changelog](CHANGELOG.md) — version history
 
-## Building
+# Build and install in development mode
+maturin develop --features python
+```
 
+### Rust
+
+```bash
+cargo add qnet-core
+```
+
+## Building
 ```bash
 # Rust only
 cargo build

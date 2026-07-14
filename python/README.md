@@ -6,16 +6,7 @@ Python bindings for the **qnet-core** quantum network simulation engine. Simulat
 
 ```bash
 # Install build dependencies
-pip install maturin
-
-# Build and install in development mode (from repo root)
-maturin develop --manifest-path Cargo.toml --features python
-
-# Or build from the python/ directory
-cd python && maturin develop --features pyo3/python
-```
-
-> **Note:** The Python bindings are gated behind the `python` feature. Ensure it is enabled when building.
+pip install qnet-core
 
 ## Quick Start
 
