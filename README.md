@@ -26,43 +26,20 @@ Quantum network entanglement distribution simulator. Models quantum repeater net
 ```bash
 # Install build dependencies
 pip install qnet-core
-
+```
 ## Quick Start
 
 ```python
-from qnet_core import QNetEngine, StrategyType, NodeDefinition, LinkDefinition
+from qnet_core import QNetEngine, generate_topology
+
+topology = generate_topology("hybrid_satellite_fiber")
 
 engine = QNetEngine()
+engine.load_topology(topology)
 
-nodes = [
-    NodeDefinition(id="A", memory_lifetime_t2=1.0),
-    NodeDefinition(id="B", memory_lifetime_t2=1.0),
-]
-links = [
-    LinkDefinition(
-        from_node="A", to="B",
-        distance_km=10.0,
-        base_fidelity=0.95,
-        generation_rate_hz=1000.0,
-    ),
-]
-engine.define_network(nodes=nodes, links=links)
+stats = engine.simulate("Toronto", "London", fidelity_target=0.9, max_latency_ms=200, runs=100)
 
-# Single simulation
-result = engine.request_entanglement(
-    from_node="A", to="B",
-    fidelity_target=0.9,
-    max_latency_ms=100.0,
-    strategy=StrategyType.HighestFidelity,
-)
-print(f"Success: {result.success}  Fidelity: {result.final_fidelity:.4f}")
-
-# Monte Carlo ensemble (1000 runs)
-stats = engine.simulate(
-    from_node="A", to="B",
-    fidelity_target=0.9, max_latency_ms=100.0, runs=1000,
-)
-print(f"Success rate: {stats.empirical_success_rate:.2%}")
+print(stats.empirical_success_rate)
 ```
 
 ## Documentation
@@ -72,6 +49,9 @@ print(f"Success rate: {stats.empirical_success_rate:.2%}")
 
 ## Examples
 [Example repo + Jupiter Notebooks](https://github.com/qnet-labs/qnet-examples)
+
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]
+(https://colab.research.google.com/github/qnet-labs/qnet-core/blob/main/notebooks/gothamq_demo.ipynb)
 
 # Build and install in development mode
 maturin develop --features python
