@@ -51,7 +51,7 @@ print(stats.empirical_success_rate)
 [Example repo + Jupiter Notebooks](https://github.com/qnet-labs/qnet-examples)
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]
-(https://colab.research.google.com/github/qnet-labs/qnet-core/blob/main/notebooks/gothamq_demo.ipynb)
+(https://colab.research.google.com/github/qnet-labs/qnet-core/blob/main/notebooks/01_gothamq_validation.ipynb)
 
 # Build and install in development mode
 maturin develop --features python
