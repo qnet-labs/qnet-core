@@ -17,7 +17,7 @@ use crate::api::request::{
 // Configuration Types
 // ============================================================================
 
-#[pyclass]
+#[pyclass(name = "PhysicalConfig")]
 #[derive(Clone)]
 pub struct PyPhysicalConfig {
     #[pyo3(get, set)]
@@ -37,7 +37,7 @@ impl PyPhysicalConfig {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "SimulationConfig")]
 #[derive(Clone)]
 pub struct PySimulationConfig {
     #[pyo3(get, set)]
@@ -68,7 +68,7 @@ impl PySimulationConfig {
 // Request/Response Types
 // ============================================================================
 
-#[pyclass]
+#[pyclass(name = "NodeDefinition")]
 #[derive(Clone)]
 pub struct PyNodeDefinition {
     #[pyo3(get, set)]
@@ -88,7 +88,7 @@ impl PyNodeDefinition {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "LinkType")]
 #[derive(Clone)]
 pub struct PyLinkType(pub LinkType);
 
@@ -109,7 +109,7 @@ impl PyLinkType {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "SatelliteConditions")]
 #[derive(Clone)]
 pub struct PySatelliteConditions {
     #[pyo3(get, set)]
@@ -134,7 +134,7 @@ impl PySatelliteConditions {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "LinkDefinition")]
 #[derive(Clone)]
 pub struct PyLinkDefinition {
     #[pyo3(get, set)]
@@ -177,7 +177,7 @@ impl PyLinkDefinition {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "NetworkTopologyPayload")]
 #[derive(Clone)]
 pub struct PyNetworkTopologyPayload {
     #[pyo3(get, set)]
@@ -194,7 +194,7 @@ impl PyNetworkTopologyPayload {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "EntanglementRequest")]
 #[derive(Clone)]
 pub struct PyEntanglementRequest {
     #[pyo3(get, set)]
@@ -229,7 +229,7 @@ impl PyEntanglementRequest {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "SimulationResult")]
 pub struct PySimulationResult {
     #[pyo3(get, set)]
     pub success: bool,
@@ -444,7 +444,7 @@ impl PyMonteCarloContext {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "MonteCarloStats")]
 pub struct PyMonteCarloStats {
     #[pyo3(get, set)]
     pub total_runs: usize,
@@ -563,7 +563,7 @@ impl PyMonteCarloStats {
 // Strategy Type
 // ============================================================================
 
-#[pyclass]
+#[pyclass(name = "StrategyType")]
 #[derive(Clone, Copy)]
 pub struct PyStrategyType(pub crate::routing::strategy::StrategyType);
 

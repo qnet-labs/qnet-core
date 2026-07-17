@@ -11,7 +11,7 @@ use crate::engine::QNetEngine;
 // Main Engine
 // ============================================================================
 
-#[pyclass]
+#[pyclass(name = "QNetEngine")]
 pub struct PyQNetEngine {
     inner: QNetEngine,
     /// Snapshot of the last network + config for post-hoc analysis.

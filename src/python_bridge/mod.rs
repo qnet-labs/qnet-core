@@ -32,30 +32,30 @@ use pyo3::types::PyModule;
 /// Registered as `qnet_core` in Cargo.toml via [lib] name = "qnet_core".
 #[pymodule]
 fn qnet_core(_py: Python, m: &PyModule) -> PyResult<()> {
-    // Classes
-    m.add_class::<PyQNetEngine>()?;
-    m.add_class::<PyPhysicalConfig>()?;
-    m.add_class::<PyLinkDefinition>()?;
-    m.add_class::<PySatelliteConditions>()?;
-    m.add_class::<PyEntanglementRequest>()?;
-    m.add_class::<PyMonteCarloStats>()?;
-    m.add_class::<TopologyComparisonResult>()?;
-    m.add_class::<TopologyComparisonReport>()?;
-    m.add_class::<PyLinkType>()?;
-    m.add_class::<PyStrategyType>()?;
-    m.add_class::<PySimulationConfig>()?;
-    m.add_class::<PyNodeDefinition>()?;
-    m.add_class::<PyNetworkTopologyPayload>()?;
-    m.add_class::<PyQNetFile>()?;
-    m.add_class::<PyQNetNode>()?;
-    m.add_class::<PyQNetLink>()?;
-    m.add_class::<PyQNetConfig>()?;
-    m.add_class::<PyQNetConstraints>()?;
-    m.add_class::<PyQNetMetadata>()?;
-    m.add_class::<PyQNetNodeType>()?;
-    m.add_class::<PyQNetLinkType>()?;
-    m.add_class::<PyQNetSatelliteExtension>()?;
-    m.add_class::<TopologyEndpoints>()?;
+    // Classes (each has #[pyclass(name = "CleanName")] — Python-visible name is clean, Rust struct keeps Py prefix)
+    m.add_class::<PyQNetEngine>()?;           // → QNetEngine
+    m.add_class::<PyPhysicalConfig>()?;       // → PhysicalConfig
+    m.add_class::<PyLinkDefinition>()?;       // → LinkDefinition
+    m.add_class::<PySatelliteConditions>()?;  // → SatelliteConditions
+    m.add_class::<PyEntanglementRequest>()?;  // → EntanglementRequest
+    m.add_class::<PyMonteCarloStats>()?;      // → MonteCarloStats
+    m.add_class::<TopologyComparisonResult>()?; // → TopologyComparisonResult (already clean)
+    m.add_class::<TopologyComparisonReport>()?; // → TopologyComparisonReport (already clean)
+    m.add_class::<PyLinkType>()?;             // → LinkType
+    m.add_class::<PyStrategyType>()?;         // → StrategyType
+    m.add_class::<PySimulationConfig>()?;     // → SimulationConfig
+    m.add_class::<PyNodeDefinition>()?;       // → NodeDefinition
+    m.add_class::<PyNetworkTopologyPayload>()?; // → NetworkTopologyPayload
+    m.add_class::<PyQNetFile>()?;             // → QNetFile
+    m.add_class::<PyQNetNode>()?;             // → QNetNode
+    m.add_class::<PyQNetLink>()?;             // → QNetLink
+    m.add_class::<PyQNetConfig>()?;           // → QNetConfig
+    m.add_class::<PyQNetConstraints>()?;      // → QNetConstraints
+    m.add_class::<PyQNetMetadata>()?;         // → QNetMetadata
+    m.add_class::<PyQNetNodeType>()?;         // → QNetNodeType
+    m.add_class::<PyQNetLinkType>()?;         // → QNetLinkType
+    m.add_class::<PyQNetSatelliteExtension>()?; // → QNetSatelliteExtension
+    m.add_class::<TopologyEndpoints>()?;      // → TopologyEndpoints (already clean)
 
     // Functions
     m.add_function(wrap_pyfunction!(generate_topology, m)?)?;
@@ -71,20 +71,9 @@ fn qnet_core(_py: Python, m: &PyModule) -> PyResult<()> {
     // Export from_qnet_file function
     m.add_function(wrap_pyfunction!(from_qnet_file_py, m)?)?;
 
-    // Export clean aliases (without Py prefix) for backward compatibility
-    m.add("QNetEngine", m.getattr("PyQNetEngine")?)?;
-    m.add("StrategyType", m.getattr("PyStrategyType")?)?;
-    m.add("NodeDefinition", m.getattr("PyNodeDefinition")?)?;
-    m.add("LinkDefinition", m.getattr("PyLinkDefinition")?)?;
-    m.add("EntanglementRequest", m.getattr("PyEntanglementRequest")?)?;
-    m.add("MonteCarloStats", m.getattr("PyMonteCarloStats")?)?;
-    m.add("SimulationConfig", m.getattr("PySimulationConfig")?)?;
-    m.add("PhysicalConfig", m.getattr("PyPhysicalConfig")?)?;
-    m.add("SatelliteConditions", m.getattr("PySatelliteConditions")?)?;
-    m.add("LinkType", m.getattr("PyLinkType")?)?;
-
-    // Export PyQNetFile as qnet_file for backward compatibility
-    m.add("PyQNetFile", m.getattr("PyQNetFile")?)?;
+    // All classes above expose clean Python names via #[pyclass(name = "...")], so no aliases needed.
+    // These Rust struct names are for backward compat — users can still access them if they ever need to:
+    // m.add("PyQNetFile", m.getattr("PyQNetFile")?)?;  // → QNetFile (redundant)
 
     // Convenience aliases
     m.add("load", m.getattr("load_qnet_file")?)?;

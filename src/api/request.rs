@@ -46,7 +46,7 @@ pub struct TopologySnapshot {
 use pyo3::prelude::*;
 
 #[cfg(feature = "python")]
-#[pyclass]
+#[pyclass(name = "TopologySnapshot")]
 #[derive(Clone)]
 pub struct PyTopologySnapshot {
     #[pyo3(get, set)]
@@ -60,7 +60,7 @@ pub struct PyTopologySnapshot {
 }
 
 #[cfg(feature = "python")]
-#[pyclass]
+#[pyclass(name = "TopologyMetadata")]
 #[derive(Clone)]
 pub struct PyTopologyMetadata {
     #[pyo3(get, set)]
@@ -70,7 +70,7 @@ pub struct PyTopologyMetadata {
 }
 
 #[cfg(feature = "python")]
-#[pyclass]
+#[pyclass(name = "TopologyConfig")]
 #[derive(Clone)]
 pub struct PyTopologyConfig {
     #[pyo3(get, set)]
@@ -165,7 +165,7 @@ pub struct TopologyDiff {
 
 // PyO3 integration for TopologyDiff
 #[cfg(feature = "python")]
-#[pyclass]
+#[pyclass(name = "TopologyDiff")]
 #[derive(Clone)]
 pub struct PyTopologyDiff {
     #[pyo3(get, set)]

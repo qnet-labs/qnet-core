@@ -253,16 +253,16 @@ for r in report.results:
 Programmatic comparison of two topology snapshots.
 
 ```python
-from qnet_core import diff_topologies, PyTopologySnapshot, PyTopologyMetadata, PyTopologyConfig
+from qnet_core import diff_topologies, TopologySnapshot, TopologyMetadata, TopologyConfig
 
-snap1 = PyTopologySnapshot(
-    metadata=PyTopologyMetadata(name="v1", version="1.0"),
+snap1 = TopologySnapshot(
+    metadata=TopologyMetadata(name="v1", version="1.0"),
     nodes=[...],
     links=[...],
-    config=PyTopologyConfig(alpha_loss=0.22, gamma_swapping=0.9),
+    config=TopologyConfig(alpha_loss=0.22, gamma_swapping=0.9),
 )
 
-snap2 = PyTopologySnapshot(...)
+snap2 = TopologySnapshot(...)
 
 diff = diff_topologies(snap1, snap2)
 print(diff.summary)
@@ -272,10 +272,10 @@ print(diff.summary)
 
 | Class | Fields |
 |-------|--------|
-| `PyTopologyMetadata` | `name: str`, `version: str` |
-| `PyTopologyConfig` | `alpha_loss: float`, `gamma_swapping: float` |
-| `PyTopologySnapshot` | `metadata`, `nodes: List[NodeDefinition]`, `links: List[LinkDefinition]`, `config` |
-| **PyTopologyDiff** | `name`, `nodes_added`, `nodes_removed`, `nodes_modified`, `links_added`, `links_removed`, `links_modified`, `summary` (all `List[str]`) |
+| `TopologyMetadata` | `name: str`, `version: str` |
+| `TopologyConfig` | `alpha_loss: float`, `gamma_swapping: float` |
+| `TopologySnapshot` | `metadata`, `nodes: List[NodeDefinition]`, `links: List[LinkDefinition]`, `config` |
+| **TopologyDiff** | `name`, `nodes_added`, `nodes_removed`, `nodes_modified`, `links_added`, `links_removed`, `links_modified`, `summary` (all `List[str]`) |
 
 ### .qnet File Format — Load / Save / Validate
 
@@ -284,9 +284,9 @@ Save and load network topologies as JSON files.
 #### Programmatic creation & save
 
 ```python
-from qnet_core import PyQNetFile, QNetNodeType, QNetLinkType, PyQNetSatelliteExtension
+from qnet_core import QNetFile, QNetNodeType, QNetLinkType, QNetSatelliteExtension
 
-qf = PyQNetFile(name="my-network")
+qf = QNetFile(name="my-network")
 qf.metadata.description = "A hybrid satellite-fiber network"
 qf.metadata.author = "Alice"
 
@@ -296,9 +296,23 @@ qf.add_link(
     id="link-1", src="Toronto", to="London",
     distance_km=5600.0, base_fidelity=0.85, generation_rate_hz=500.0,
     link_type=QNetLinkType.Satellite,
-    satellite=PyQNetSatelliteExtension(visibility=0.9, weather_factor=0.8),
+    satellite=QNetSatelliteExtension(visibility=0.9, weather_factor=0.8),
 )
 qf.save("output.qnet")
+```
+
+#### From a .qnet file (factory)
+
+```python
+from qnet_core import from_qnet_file
+
+# One call to load and start simulating
+engine = from_qnet_file("network.qnet")
+
+result = engine.request_entanglement(
+    from_node="A", to="B",
+    fidelity_target=0.9, max_latency_ms=100.0,
+)
 ```
 
 #### Load & validate
@@ -328,9 +342,10 @@ print(f"Links added: {diff['links_added']}, removed: {diff['links_removed']}, mo
 
 | Function / Class | Signature | Description |
 |------------------|-----------|-------------|
-| `load_qnet_file(filepath)` | `(str) -> PyQNetFile` | Load and parse a .qnet JSON file |
-| `save_topology(engine, filepath)` | `(PyQNetEngine, str) -> None` | Persist engine's current topology to .qnet |
-| `load_topology(engine, filepath)` | `(PyQNetEngine, str) -> None` | Load a .qnet file into an existing engine |
+| `from_qnet_file(filepath)` | `(str) -> QNetEngine` | Factory: load a .qnet file and return an initialized engine |
+| `load_qnet_file(filepath)` | `(str) -> QNetFile` | Load and parse a .qnet JSON file |
+| `save_topology(engine, filepath)` | `(QNetEngine, str) -> None` | Persist engine's current topology to .qnet |
+| `load_topology(engine, filepath)` | `(QNetEngine, str) -> None` | Load a .qnet file into an existing engine |
 | `validate(filepath)` | `(str) -> dict` | Returns `{"valid", "filepath", "errors", "warnings"}` — **does not raise** |
 | `diff(file1, file2)` | `(str, str) -> dict` | Returns diff keys (`summary`, `_added`, `_removed`, `_modified`) or `{"error": ...}` |
 
@@ -338,15 +353,15 @@ print(f"Links added: {diff['links_added']}, removed: {diff['links_removed']}, mo
 
 | Class | Constructor | Key fields |
 |-------|------------|------------|
-| **PyQNetFile** | `(name: str)` | `version`, `metadata` (PyQNetMetadata), `nodes` (List[PyQNetNode]), `links` (List[PyQNetLink]), `config` (Optional[PyQNetConfig]), `constraints` (Optional[PyQNetConstraints]) |
-| **PyQNetFile.add_node(...)** | `(id, memory_lifetime_ms?, memory_capacity?, node_type?)` | — | Push a node onto the file |
-| **PyQNetFile.add_link(...)** | `(id, src, to, distance_km, base_fidelity, generation_rate_hz, link_type?, satellite?)` | — | Push a link onto the file |
-| **PyQNetFile.save(...)** | `(filepath: str)` | `None` | Write pretty-printed JSON to disk |
-| **PyQNetNode** | `(id, memory_lifetime_ms?, memory_capacity?, node_type?)` | `id`, `memory_lifetime_ms`, `memory_capacity`, `node_type` |
-| **PyQNetLink** | `(id, src, to, distance_km, base_fidelity, generation_rate_hz, link_type?, satellite?)` | `id`, `src`, `to`, `distance_km`, `base_fidelity`, `generation_rate_hz`, `link_type`, `satellite` (PyQNetSatelliteExtension) |
-| **PyQNetConfig** | `(alpha_loss?, beta_fidelity_decay?, gamma_swapping?, max_attempts?)` | `alpha_loss`, `beta_fidelity_decay`, `gamma_swapping`, `max_attempts` |
-| **PyQNetConstraints** | `(fidelity_target?, max_latency_ms?)` | `fidelity_target`, `max_latency_ms` — supports `__eq__` |
-| **PyQNetMetadata** | `(name, description?, author?, created_at?)` | `name`, `description`, `author`, `created_at` |
+| **QNetFile** | `(name: str)` | `version`, `metadata` (QNetMetadata), `nodes` (List[QNetNode]), `links` (List[QNetLink]), `config` (Optional[QNetConfig]), `constraints` (Optional[QNetConstraints]) |
+| **QNetFile.add_node(...)** | `(id, memory_lifetime_ms?, memory_capacity?, node_type?)` | — | Push a node onto the file |
+| **QNetFile.add_link(...)** | `(id, src, to, distance_km, base_fidelity, generation_rate_hz, link_type?, satellite?)` | — | Push a link onto the file |
+| **QNetFile.save(...)** | `(filepath: str)` | `None` | Write pretty-printed JSON to disk |
+| **QNetNode** | `(id, memory_lifetime_ms?, memory_capacity?, node_type?)` | `id`, `memory_lifetime_ms`, `memory_capacity`, `node_type` |
+| **QNetLink** | `(id, src, to, distance_km, base_fidelity, generation_rate_hz, link_type?, satellite?)` | `id`, `src`, `to`, `distance_km`, `base_fidelity`, `generation_rate_hz`, `link_type`, `satellite` (QNetSatelliteExtension) |
+| **QNetConfig** | `(alpha_loss?, beta_fidelity_decay?, gamma_swapping?, max_attempts?)` | `alpha_loss`, `beta_fidelity_decay`, `gamma_swapping`, `max_attempts` |
+| **QNetConstraints** | `(fidelity_target?, max_latency_ms?)` | `fidelity_target`, `max_latency_ms` — supports `__eq__` |
+| **QNetMetadata** | `(name, description?, author?, created_at?)` | `name`, `description`, `author`, `created_at` |
 
 ## Complete Import Map
 
@@ -367,32 +382,33 @@ Everything available after `from qnet_core import ...`:
 | `SimulationResult` | Single-run result |
 | `MonteCarloStats` | Ensemble result |
 | `TopologyEndpoints` | Endpoint mapping for comparison |
-| `PyTopologySnapshot` | Topology snapshot (for diffing) |
-| `PyTopologyMetadata` | Snapshot metadata |
-| `PyTopologyConfig` | Snapshot config (alpha_loss, gamma_swapping) |
-| `PyTopologyDiff` | Diff between two snapshots |
-| `PyQNetFile` | .qnet container (load/save/diff) |
-| `PyQNetNode` | Node for .qnet format |
-| `PyQNetLink` | Link for .qnet format |
-| `PyQNetConfig` | Physics config for .qnet |
-| `PyQNetConstraints` | Constraints for .qnet |
-| `PyQNetMetadata` | Metadata for .qnet |
-| `PyQNetNodeType` | Node type enum (Ground/Satellite/Repeater) |
-| `PyQNetLinkType` | Link type enum (Fiber/Satellite) |
-| `PyQNetSatelliteExtension` | Satellite extension for .qnet links |
+| `TopologySnapshot` | Topology snapshot (for diffing) |
+| `TopologyMetadata` | Snapshot metadata |
+| `TopologyConfig` | Snapshot config (alpha_loss, gamma_swapping) |
+| `TopologyDiff` | Diff between two snapshots |
+| `QNetFile` | .qnet container (load/save/diff) |
+| `QNetNode` | Node for .qnet format |
+| `QNetLink` | Link for .qnet format |
+| `QNetConfig` | Physics config for .qnet |
+| `QNetConstraints` | Constraints for .qnet |
+| `QNetMetadata` | Metadata for .qnet |
+| `QNetNodeType` | Node type enum (Ground/Satellite/Repeater) |
+| `QNetLinkType` | Link type enum (Fiber/Satellite) |
+| `QNetSatelliteExtension` | Satellite extension for .qnet links |
 
-**Module-level functions (8)**
+**Module-level functions (9)**
 
 | Function | Returns | Purpose |
 |----------|---------|---------|
+| `from_qnet_file(filepath)` | `QNetEngine` | Load a .qnet file and return an initialized engine |
 | `generate_topology(name: str)` | `NetworkTopologyPayload` | Generate a pre-built topology |
 | `compare_topologies(...)` | `TopologyComparisonReport` | Compare topologies via Monte Carlo |
 | `save_topology(engine, filepath)` | `None` | Save engine state to .qnet |
 | `load_topology(engine, filepath)` | `None` | Load .qnet into engine |
 | `validate(filepath)` | `dict` | Validate a .qnet file (returns errors) |
-| `load_qnet_file(filepath)` | `PyQNetFile` | Load .qnet JSON as Python objects |
+| `load_qnet_file(filepath)` | `QNetFile` | Load .qnet JSON as Python objects |
 | `diff(file1, file2)` | `dict` | Diff two .qnet files on disk |
-| `diff_topologies(snap1, snap2)` | `PyTopologyDiff` | Diff two topology snapshots programmatically |
+| `diff_topologies(snap1, snap2)` | `TopologyDiff` | Diff two topology snapshots programmatically |
 
 ## Running Tests
 

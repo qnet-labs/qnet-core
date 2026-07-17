@@ -16,7 +16,7 @@ use crate::validation::QNetValidator;
 // Helper pyclasses mirroring Rust types in src/api/request.rs
 // ---------------------------------------------------------------------------
 
-#[pyclass]
+#[pyclass(name = "QNetMetadata")]
 #[derive(Clone)]
 pub struct PyQNetMetadata {
     #[pyo3(get, set)]
@@ -48,13 +48,13 @@ impl PyQNetMetadata {
 
     fn __repr__(&self) -> String {
         format!(
-            "PyQNetMetadata(name='{}', description={:?}, author={:?})",
+            "QNetMetadata(name='{}', description={:?}, author={:?})",
             self.name, self.description, self.author
         )
     }
 }
 
-#[pyclass]
+#[pyclass(name = "QNetNodeType")]
 #[derive(Clone, Copy, Debug)]
 pub struct PyQNetNodeType(pub crate::api::request::QNetNodeType);
 
@@ -77,7 +77,7 @@ impl PyQNetNodeType {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "QNetLinkType")]
 #[derive(Clone, Copy)]
 pub struct PyQNetLinkType(pub crate::api::request::QNetLinkType);
 
@@ -97,7 +97,7 @@ impl PyQNetLinkType {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "QNetSatelliteExtension")]
 #[derive(Clone)]
 pub struct PyQNetSatelliteExtension {
     #[pyo3(get, set)]
@@ -126,7 +126,7 @@ impl PyQNetSatelliteExtension {
 // Main .qnet container types (mirrors QNetFile / QNetNode / QNetLink etc.)
 // ---------------------------------------------------------------------------
 
-#[pyclass]
+#[pyclass(name = "QNetFile")]
 #[derive(Clone)]
 pub struct PyQNetFile {
     #[pyo3(get, set)]
@@ -145,7 +145,7 @@ pub struct PyQNetFile {
     pub extensions: Option<PyObject>,
 }
 
-#[pyclass]
+#[pyclass(name = "QNetNode")]
 #[derive(Clone)]
 pub struct PyQNetNode {
     #[pyo3(get, set)]
@@ -177,13 +177,13 @@ impl PyQNetNode {
 
     fn __repr__(&self) -> String {
         format!(
-            "PyQNetNode(id='{}', memory={:?}, capacity={:?}, type={:?})",
+            "QNetNode(id='{}', memory={:?}, capacity={:?}, type={:?})",
             self.id, self.memory_lifetime_ms, self.memory_capacity, self.node_type
         )
     }
 }
 
-#[pyclass]
+#[pyclass(name = "QNetLink")]
 #[derive(Clone)]
 pub struct PyQNetLink {
     #[pyo3(get, set)]
@@ -232,7 +232,7 @@ impl PyQNetLink {
 
     fn __repr__(&self) -> String {
         format!(
-            "PyQNetLink(id={:?}, src='{}', to='{}', dist={}km, fid={:.2}, rate={}Hz)",
+            "QNetLink(id={:?}, src='{}', to='{}', dist={}km, fid={:.2}, rate={}Hz)",
             self.id,
             self.src,
             self.to,
@@ -243,7 +243,7 @@ impl PyQNetLink {
     }
 }
 
-#[pyclass]
+#[pyclass(name = "QNetConfig")]
 #[derive(Clone)]
 pub struct PyQNetConfig {
     #[pyo3(get, set)]
@@ -275,13 +275,13 @@ impl PyQNetConfig {
 
     fn __repr__(&self) -> String {
         format!(
-            "PyQNetConfig(alpha_loss={:?}, beta_fidelity_decay={:?}, gamma_swapping={:?}, max_attempts={:?})",
+            "QNetConfig(alpha_loss={:?}, beta_fidelity_decay={:?}, gamma_swapping={:?}, max_attempts={:?})",
             self.alpha_loss, self.beta_fidelity_decay, self.gamma_swapping, self.max_attempts
         )
     }
 }
 
-#[pyclass]
+#[pyclass(name = "QNetConstraints")]
 #[derive(Clone)]
 pub struct PyQNetConstraints {
     #[pyo3(get, set)]
@@ -306,7 +306,7 @@ impl PyQNetConstraints {
 
     fn __repr__(&self) -> String {
         format!(
-            "PyQNetConstraints(fidelity_target={:?}, max_latency_ms={:?})",
+            "QNetConstraints(fidelity_target={:?}, max_latency_ms={:?})",
             self.fidelity_target, self.max_latency_ms
         )
     }
@@ -387,7 +387,7 @@ impl PyQNetFile {
 
     fn __repr__(&self) -> String {
         format!(
-            "PyQNetFile(version='{}', metadata={{name:'{}'}}, nodes={}, links={})",
+            "QNetFile(version='{}', metadata={{name:'{}'}}, nodes={}, links={})",
             self.version,
             self.metadata.name,
             self.nodes.len(),
@@ -458,7 +458,7 @@ impl From<&PyQNetFile> for QNetFile {
 // Python functions for .qnet file I/O and validation
 // ============================================================================
 
-/// Load a .qnet file from disk and return it as a PyQNetFile object.
+/// Load a .qnet file from disk and return it as a QNetFile object.
 ///
 /// Validates version (must be "1.0") and graph connectivity before returning.
 /// Raises RuntimeError on IO errors, parse errors, or validation failures.
