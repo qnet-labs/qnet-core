@@ -2,10 +2,13 @@ use crate::api::request::{
     EntanglementRequest, LinkDefinition, NetworkTopologyPayload, TopologyConfig, TopologyDiff,
     TopologySnapshot,
 };
-use crate::api::response::{MonteCarloStats, SimulationResult};
+use crate::api::response::{MonteCarloStats, SimulationResult, QKDResult, TeleportationOutcome, DistributedComputingResult};
 use crate::config::SimulationConfig;
 use crate::montecarlo::MonteCarloSimulationEngine;
 use crate::network::QuantumNetwork;
+use crate::protocols::qkd::{QKDProtocol, QKDParameters};
+use crate::protocols::teleportation::{TeleportationProtocol, TeleportationParameters};
+use crate::protocols::distributed::{DistributedComputingProtocol, DistributedComputingParameters};
 use crate::scheduler::NetworkOrchestratorPolicy;
 use crate::simulation::SimulationRuntime;
 use std::collections::HashMap;
@@ -209,6 +212,33 @@ impl QNetEngine {
 
         diff.summary = diff.generate_summary();
         diff
+    }
+
+    /// Run BB84-style quantum key distribution over the defined network.
+    ///
+    /// Establishes entanglement links between `from_node` and `to_node`, simulates
+    /// Z-basis measurements on shared Bell states, and derives a classical secret key.
+    pub fn run_qkd(&self, params: QKDParameters) -> QKDResult {
+        QKDProtocol::run(self, params)
+    }
+
+    /// Execute entanglement-based quantum state teleportation between two nodes.
+    ///
+    /// Establishes a resource Bell pair between `source_node` and `target_node`, then computes
+    /// the teleported state fidelity based on the resource entanglement quality.
+    pub fn execute_teleportation(&self, params: TeleportationParameters) -> TeleportationOutcome {
+        TeleportationProtocol::execute(self, params)
+    }
+
+    /// Run a distributed quantum computing protocol across participating nodes.
+    ///
+    /// Establishes required entanglement links from the coordination topology, simulates
+    /// coordinated measurements on shared entangled states, and computes per-party outcomes.
+    pub fn run_distributed_computation(
+        &self,
+        params: DistributedComputingParameters,
+    ) -> DistributedComputingResult {
+        DistributedComputingProtocol::execute(self, params)
     }
 }
 

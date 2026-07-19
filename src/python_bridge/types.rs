@@ -651,3 +651,543 @@ pub struct TopologyComparisonReport {
     #[pyo3(get, set)]
     pub summary: String,
 }
+
+// ============================================================================
+// Higher-Level Protocol Types (QKD, Teleportation, Distributed Computing)
+// ============================================================================
+
+// --- QKD Types ---
+
+#[pyclass(name = "QKDParameters")]
+#[derive(Clone)]
+pub struct PyQKDParameters {
+    #[pyo3(get, set)]
+    pub from_node: String,
+    #[pyo3(get, set)]
+    pub to_node: String,
+    #[pyo3(get, set)]
+    pub fidelity_target: f64,
+    #[pyo3(get, set)]
+    pub max_latency_ms: f64,
+    #[pyo3(get, set)]
+    pub rounds: usize,
+    #[pyo3(get, set)]
+    pub error_rate_tolerance: f64,
+    #[pyo3(get, set)]
+    pub sifting_overhead_ratio: f64,
+    #[pyo3(get, set)]
+    pub privacy_amplification_factor: f64,
+}
+
+#[pymethods]
+impl PyQKDParameters {
+    #[new]
+    fn new(
+        from_node: String,
+        to_node: String,
+        fidelity_target: f64,
+        max_latency_ms: f64,
+        rounds: Option<usize>,
+        error_rate_tolerance: Option<f64>,
+        sifting_overhead_ratio: Option<f64>,
+        privacy_amplification_factor: Option<f64>,
+    ) -> Self {
+        Self {
+            from_node,
+            to_node,
+            fidelity_target,
+            max_latency_ms,
+            rounds: rounds.unwrap_or(100),
+            error_rate_tolerance: error_rate_tolerance.unwrap_or(0.11),
+            sifting_overhead_ratio: sifting_overhead_ratio.unwrap_or(0.5),
+            privacy_amplification_factor: privacy_amplification_factor.unwrap_or(0.8),
+        }
+    }
+}
+
+#[pyclass(name = "QKDResult")]
+pub struct PyQKDResult {
+    #[pyo3(get, set)]
+    pub success: bool,
+    #[pyo3(get, set)]
+    pub secret_key_length_bits: usize,
+    #[pyo3(get, set)]
+    pub efficiency_rate: f64,
+    #[pyo3(get, set)]
+    pub qber: f64,
+    #[pyo3(get, set)]
+    pub latency_ms: f64,
+    #[pyo3(get, set)]
+    pub execution_path: Vec<String>,
+    #[pyo3(get, set)]
+    pub rounds_completed: usize,
+    #[pyo3(get, set)]
+    pub rounds_failed: usize,
+}
+
+#[pymethods]
+impl PyQKDResult {
+    #[new]
+    fn new(
+        success: bool,
+        secret_key_length_bits: usize,
+        efficiency_rate: f64,
+        qber: f64,
+        latency_ms: f64,
+        execution_path: Vec<String>,
+        rounds_completed: usize,
+        rounds_failed: usize,
+    ) -> Self {
+        Self {
+            success,
+            secret_key_length_bits,
+            efficiency_rate,
+            qber,
+            latency_ms,
+            execution_path,
+            rounds_completed,
+            rounds_failed,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "QKDResult(success={}, key_bits={}, qber={:.4})",
+            self.success, self.secret_key_length_bits, self.qber
+        )
+    }
+}
+
+#[pyclass(name = "QKDStats")]
+pub struct PyQKDStats {
+    #[pyo3(get, set)]
+    pub total_runs: usize,
+    #[pyo3(get, set)]
+    pub success_rate: f64,
+    #[pyo3(get, set)]
+    pub mean_key_length_bits: f64,
+    #[pyo3(get, set)]
+    pub mean_efficiency: f64,
+    #[pyo3(get, set)]
+    pub mean_qber: f64,
+}
+
+#[pymethods]
+impl PyQKDStats {
+    #[new]
+    fn new(
+        total_runs: usize,
+        success_rate: f64,
+        mean_key_length_bits: f64,
+        mean_efficiency: f64,
+        mean_qber: f64,
+    ) -> Self {
+        Self {
+            total_runs,
+            success_rate,
+            mean_key_length_bits,
+            mean_efficiency,
+            mean_qber,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "QKDStats(runs={}, success={:.0}, mean_key_len={:.1})",
+            self.total_runs, self.success_rate * 100.0, self.mean_key_length_bits
+        )
+    }
+}
+
+// --- Teleportation Types ---
+
+#[pyclass(name = "TeleportationParameters")]
+#[derive(Clone)]
+pub struct PyTeleportationParameters {
+    #[pyo3(get, set)]
+    pub source_node: String,
+    #[pyo3(get, set)]
+    pub target_node: String,
+    #[pyo3(get, set)]
+    pub state_fidelity: f64,
+    #[pyo3(get, set)]
+    pub classical_bandwidth_ms: f64,
+    #[pyo3(get, set)]
+    pub relay_nodes: Vec<String>,
+}
+
+#[pymethods]
+impl PyTeleportationParameters {
+    #[new]
+    fn new(
+        source_node: String,
+        target_node: String,
+        state_fidelity: Option<f64>,
+        classical_bandwidth_ms: Option<f64>,
+    ) -> Self {
+        Self {
+            source_node,
+            target_node,
+            state_fidelity: state_fidelity.unwrap_or(0.95),
+            classical_bandwidth_ms: classical_bandwidth_ms.unwrap_or(100.0),
+            relay_nodes: Vec::new(),
+        }
+    }
+}
+
+#[pyclass(name = "TeleportationOutcome")]
+pub struct PyTeleportationOutcome {
+    #[pyo3(get, set)]
+    pub success: bool,
+    #[pyo3(get, set)]
+    pub teleportation_fidelity: f64,
+    #[pyo3(get, set)]
+    pub resource_entanglement_fidelity: f64,
+    #[pyo3(get, set)]
+    pub latency_ms: f64,
+    #[pyo3(get, set)]
+    pub path: Vec<String>,
+    #[pyo3(get, set)]
+    pub classical_bits_transferred: usize,
+}
+
+#[pymethods]
+impl PyTeleportationOutcome {
+    #[new]
+    fn new(
+        success: bool,
+        teleportation_fidelity: f64,
+        resource_entanglement_fidelity: f64,
+        latency_ms: f64,
+        path: Vec<String>,
+        classical_bits_transferred: usize,
+    ) -> Self {
+        Self {
+            success,
+            teleportation_fidelity,
+            resource_entanglement_fidelity,
+            latency_ms,
+            path,
+            classical_bits_transferred,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "TeleportationOutcome(success={}, fidelity={:.4}, latency={:.1}ms)",
+            self.success, self.teleportation_fidelity, self.latency_ms
+        )
+    }
+}
+
+#[pyclass(name = "TeleportationStats")]
+pub struct PyTeleportationStats {
+    #[pyo3(get, set)]
+    pub total_runs: usize,
+    #[pyo3(get, set)]
+    pub success_rate: f64,
+    #[pyo3(get, set)]
+    pub mean_teleportation_fidelity: f64,
+    #[pyo3(get, set)]
+    pub teleportation_fidelity_stddev: f64,
+    #[pyo3(get, set)]
+    pub mean_latency_ms: f64,
+}
+
+#[pymethods]
+impl PyTeleportationStats {
+    #[new]
+    fn new(
+        total_runs: usize,
+        success_rate: f64,
+        mean_teleportation_fidelity: f64,
+        teleportation_fidelity_stddev: f64,
+        mean_latency_ms: f64,
+    ) -> Self {
+        Self {
+            total_runs,
+            success_rate,
+            mean_teleportation_fidelity,
+            teleportation_fidelity_stddev,
+            mean_latency_ms,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "TeleportationStats(runs={}, fidelity={:.4}±{:.4})",
+            self.total_runs, self.mean_teleportation_fidelity, self.teleportation_fidelity_stddev
+        )
+    }
+}
+
+// --- Distributed Computing Types ---
+
+#[pyclass(name = "BasisType")]
+#[derive(Clone)]
+pub struct PyBasisType(pub crate::protocols::BasisType);
+
+#[pymethods]
+impl PyBasisType {
+    #[classattr]
+    const GHZ: PyBasisType = PyBasisType(crate::protocols::BasisType::GHZ);
+    #[classattr]
+    const Cluster: PyBasisType = PyBasisType(crate::protocols::BasisType::Cluster);
+    #[classattr]
+    const GraphGraph: PyBasisType = PyBasisType(crate::protocols::BasisType::GraphGraph);
+
+    fn __repr__(&self) -> String {
+        match self.0 {
+            crate::protocols::BasisType::GHZ => "BasisType.GHZ".to_string(),
+            crate::protocols::BasisType::Cluster => "BasisType.Cluster".to_string(),
+            crate::protocols::BasisType::GraphGraph => "BasisType.GraphGraph".to_string(),
+        }
+    }
+}
+
+/// Python-visible coordination topology wrapper.
+/// Wraps the Rust CoordinationTopology enum with PyO3-compatible fields.
+#[pyclass(name = "CoordinationTopology")]
+#[derive(Clone)]
+pub struct PyCoordinationTopology {
+    #[pyo3(get, set)]
+    pub kind: String, // "star", "ring", "mesh", "arbitrary"
+    #[pyo3(get, set)]
+    pub center_node: Option<String>, // for "star"
+    #[pyo3(get, set)]
+    pub edges: Option<Vec<(String, String)>>, // for "arbitrary"
+}
+
+#[pymethods]
+impl PyCoordinationTopology {
+    #[new]
+    fn new(
+        kind: String,
+        center_node: Option<String>,
+        edges: Option<Vec<(String, String)>>,
+    ) -> Self {
+        Self {
+            kind,
+            center_node,
+            edges,
+        }
+    }
+
+    /// Create a star topology with the given center node.
+    #[staticmethod]
+    fn star(center_node: String) -> Self {
+        Self {
+            kind: "star".to_string(),
+            center_node: Some(center_node),
+            edges: None,
+        }
+    }
+
+    /// Create a ring topology.
+    #[staticmethod]
+    fn ring() -> Self {
+        Self {
+            kind: "ring".to_string(),
+            center_node: None,
+            edges: None,
+        }
+    }
+
+    /// Create a mesh (all-to-all) topology.
+    #[staticmethod]
+    fn mesh() -> Self {
+        Self {
+            kind: "mesh".to_string(),
+            center_node: None,
+            edges: None,
+        }
+    }
+
+    /// Create an arbitrary topology with explicit edges.
+    #[staticmethod]
+    fn arbitrary(edges: Vec<(String, String)>) -> Self {
+        Self {
+            kind: "arbitrary".to_string(),
+            center_node: None,
+            edges: Some(edges),
+        }
+    }
+}
+
+/// Convert Python CoordinationTopology to the internal Rust type.
+pub fn topology_to_inner(topo: &PyCoordinationTopology) -> crate::protocols::CoordinationTopology {
+    match topo.kind.as_str() {
+        "star" => crate::protocols::CoordinationTopology::Star {
+            center_node: topo.center_node.clone().unwrap_or_default(),
+        },
+        "ring" => crate::protocols::CoordinationTopology::Ring,
+        "mesh" => crate::protocols::CoordinationTopology::Mesh,
+        _ => crate::protocols::CoordinationTopology::Arbitrary {
+            edges: topo.edges.clone().unwrap_or_default(),
+        },
+    }
+}
+
+// --- Measurement Basis ---
+
+#[pyclass(name = "MeasurementBasis")]
+#[derive(Clone)]
+pub struct PyMeasurementBasis {
+    #[pyo3(get, set)]
+    pub basis_type: PyBasisType,
+    #[pyo3(get, set)]
+    pub correlation_strength: f64,
+}
+
+#[pymethods]
+impl PyMeasurementBasis {
+    #[new]
+    fn new(basis_type: Option<PyBasisType>, correlation_strength: Option<f64>) -> Self {
+        Self {
+            basis_type: basis_type.unwrap_or(PyBasisType::GHZ),
+            correlation_strength: correlation_strength.unwrap_or(0.85),
+        }
+    }
+}
+
+#[pyclass(name = "DistributedComputingParameters")]
+pub struct PyDistributedComputingParameters {
+    #[pyo3(get, set)]
+    pub participants: Vec<String>,
+    #[pyo3(get, set)]
+    pub coordination_topology: PyCoordinationTopology,
+    #[pyo3(get, set)]
+    pub measurement_basis: PyMeasurementBasis,
+    #[pyo3(get, set)]
+    pub classical_relay_latency_ms: f64,
+}
+
+#[pymethods]
+impl PyDistributedComputingParameters {
+    #[new]
+    fn new(
+        participants: Vec<String>,
+        coordination_topology: PyCoordinationTopology,
+        measurement_basis: Option<PyMeasurementBasis>,
+        classical_relay_latency_ms: Option<f64>,
+    ) -> Self {
+        Self {
+            participants,
+            coordination_topology,
+            measurement_basis: measurement_basis.unwrap_or(PyMeasurementBasis::new(None, None)),
+            classical_relay_latency_ms: classical_relay_latency_ms.unwrap_or(5.0),
+        }
+    }
+}
+
+#[pyclass(name = "PartyOutcome")]
+#[derive(Clone)]
+pub struct PyPartyOutcome {
+    #[pyo3(get, set)]
+    pub node_id: String,
+    #[pyo3(get, set)]
+    pub successful_measurement: bool,
+    #[pyo3(get, set)]
+    pub local_fidelity: f64,
+}
+
+#[pymethods]
+impl PyPartyOutcome {
+    #[new]
+    fn new(node_id: String, successful_measurement: bool, local_fidelity: f64) -> Self {
+        Self {
+            node_id,
+            successful_measurement,
+            local_fidelity,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "PartyOutcome({}, success={}, fidelity={:.4})",
+            self.node_id, self.successful_measurement, self.local_fidelity
+        )
+    }
+}
+
+#[pyclass(name = "DistributedComputingResult")]
+pub struct PyDistributedComputingResult {
+    #[pyo3(get, set)]
+    pub success: bool,
+    #[pyo3(get, set)]
+    pub computation_fidelity: f64,
+    #[pyo3(get, set)]
+    pub party_results: Vec<PyPartyOutcome>,
+    #[pyo3(get, set)]
+    pub resource_links_used: Vec<String>,
+    #[pyo3(get, set)]
+    pub total_latency_ms: f64,
+    #[pyo3(get, set)]
+    pub coordination_overhead_ms: f64,
+}
+
+#[pymethods]
+impl PyDistributedComputingResult {
+    #[new]
+    fn new(
+        success: bool,
+        computation_fidelity: f64,
+        party_results: Vec<PyPartyOutcome>,
+        resource_links_used: Vec<String>,
+        total_latency_ms: f64,
+        coordination_overhead_ms: f64,
+    ) -> Self {
+        Self {
+            success,
+            computation_fidelity,
+            party_results,
+            resource_links_used,
+            total_latency_ms,
+            coordination_overhead_ms,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "DistributedComputingResult(success={}, fidelity={:.4}, parties={})",
+            self.success, self.computation_fidelity, self.party_results.len()
+        )
+    }
+}
+
+#[pyclass(name = "DistributedComputingStats")]
+pub struct PyDistributedComputingStats {
+    #[pyo3(get, set)]
+    pub total_runs: usize,
+    #[pyo3(get, set)]
+    pub success_rate: f64,
+    #[pyo3(get, set)]
+    pub mean_computation_fidelity: f64,
+    #[pyo3(get, set)]
+    pub mean_party_success_rate: f64,
+}
+
+#[pymethods]
+impl PyDistributedComputingStats {
+    #[new]
+    fn new(
+        total_runs: usize,
+        success_rate: f64,
+        mean_computation_fidelity: f64,
+        mean_party_success_rate: f64,
+    ) -> Self {
+        Self {
+            total_runs,
+            success_rate,
+            mean_computation_fidelity,
+            mean_party_success_rate,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "DistributedComputingStats(runs={}, success={:.0}, fidelity={:.4})",
+            self.total_runs, self.success_rate * 100.0, self.mean_computation_fidelity
+        )
+    }
+}

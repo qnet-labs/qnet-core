@@ -4,16 +4,18 @@ mod memory;
 mod metrics;
 mod montecarlo;
 mod network;
-mod protocols;
 mod routing;
 mod scheduler;
 mod simulation;
 mod swapping;
 
+// Higher-level protocol implementations (QKD, teleportation, distributed computing)
+pub mod protocols;
+
 // Topology Generators
 pub mod topology;
 
-// Public Boundary Gateway and Orchestration Layers
+// Strict Boundary Gateway and Orchestration Layers
 mod api;
 mod engine;
 
@@ -33,7 +35,10 @@ pub use api::request::{
     QNetNode, QNetNodeType, QNetVersion, SatelliteConditions, TopologyConfig, TopologyDiff,
     TopologyMetadata, TopologySnapshot,
 };
-pub use api::response::{MonteCarloStats, SimulationResult};
+pub use protocols::{DistributedComputingResult, DistributedComputingStats, PartyOutcome, QKDResult, QKDStats, TeleportationOutcome, TeleportationStats};
+pub use protocols::qkd::QKDParameters;
+pub use protocols::teleportation::TeleportationParameters;
+pub use protocols::distributed::{CoordinationTopology, DistributedComputingParameters, MeasurementBasis, BasisType};
 pub use config::SimulationConfig;
 pub use diff::{diff_qnet_files, ConfigDiff, ConstraintsDiff, MetadataDiff, QNetDiff};
 pub use engine::QNetEngine;

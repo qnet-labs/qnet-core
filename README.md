@@ -53,6 +53,13 @@ print(stats.empirical_success_rate)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]
 (https://colab.research.google.com/github/qnet-labs/qnet-core/blob/main/notebooks/01_gothamq_validation.ipynb)
 
+
+## Roadmap
+- [x] Integration hooks for higher-level protocols (QKD, teleportation, distributed computing)
+- [ ] Expanded noise/decoherence modeling
+- [ ] Additional purification protocols
+- [ ] Parallel simulation support (also planned for the hosted simulation API)
+
 # Build and install in development mode
 maturin develop --features python
 ```

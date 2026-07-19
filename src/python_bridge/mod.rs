@@ -18,7 +18,7 @@ pub use types::*;
 // These are the absolute paths from the crate root (super:: resolves to crate:: not crate::python_bridge).
 use crate::python_bridge::engine::{
     compare_topologies, from_qnet_file_py, generate_topology, load_topology,
-    save_qnet_file_wrapper, save_topology,
+    save_qnet_file_wrapper, save_topology, qkd, teleportation, distributed_computation,
 };
 use crate::python_bridge::qnet_io::{diff, load_qnet_file, validate};
 
@@ -57,6 +57,21 @@ fn qnet_core(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyQNetSatelliteExtension>()?; // → QNetSatelliteExtension
     m.add_class::<TopologyEndpoints>()?;      // → TopologyEndpoints (already clean)
 
+    // Higher-level protocol types
+    m.add_class::<types::PyQKDParameters>()?;
+    m.add_class::<types::PyQKDResult>()?;
+    m.add_class::<types::PyQKDStats>()?;
+    m.add_class::<types::PyTeleportationParameters>()?;
+    m.add_class::<types::PyTeleportationOutcome>()?;
+    m.add_class::<types::PyTeleportationStats>()?;
+    m.add_class::<types::PyBasisType>()?;
+    m.add_class::<types::PyCoordinationTopology>()?;
+    m.add_class::<types::PyMeasurementBasis>()?;
+    m.add_class::<types::PyDistributedComputingParameters>()?;
+    m.add_class::<types::PyPartyOutcome>()?;
+    m.add_class::<types::PyDistributedComputingResult>()?;
+    m.add_class::<types::PyDistributedComputingStats>()?;
+
     // Functions
     m.add_function(wrap_pyfunction!(generate_topology, m)?)?;
     m.add_function(wrap_pyfunction!(compare_topologies, m)?)?;
@@ -79,6 +94,11 @@ fn qnet_core(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add("load", m.getattr("load_qnet_file")?)?;
     m.add_function(wrap_pyfunction!(save_qnet_file_wrapper, m)?)?;
     m.add("save", m.getattr("save_qnet_file_wrapper")?)?;
+
+    // Higher-level protocol functions (module-level convenience)
+    m.add_function(wrap_pyfunction!(qkd, m)?)?;
+    m.add_function(wrap_pyfunction!(teleportation, m)?)?;
+    m.add_function(wrap_pyfunction!(distributed_computation, m)?)?;
 
     Ok(())
 }

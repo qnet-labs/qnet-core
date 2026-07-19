@@ -225,6 +225,112 @@ impl PyQNetEngine {
         };
         self.inner.define_network(payload);
     }
+
+    /// Run BB84-style quantum key distribution between two nodes.
+    #[pyo3(name = "run_qkd")]
+    fn run_qkd(
+        &self,
+        params: super::types::PyQKDParameters,
+    ) -> PyResult<super::types::PyQKDResult> {
+        let params = crate::protocols::QKDParameters {
+            from_node: params.from_node,
+            to_node: params.to_node,
+            fidelity_target: params.fidelity_target,
+            max_latency_ms: params.max_latency_ms,
+            rounds: params.rounds,
+            error_rate_tolerance: params.error_rate_tolerance,
+            sifting_overhead_ratio: params.sifting_overhead_ratio,
+            privacy_amplification_factor: params.privacy_amplification_factor,
+        };
+        let result = self.inner.run_qkd(params);
+        Ok(super::types::PyQKDResult {
+            success: result.success,
+            secret_key_length_bits: result.secret_key_length_bits,
+            efficiency_rate: result.efficiency_rate,
+            qber: result.qber,
+            latency_ms: result.latency_ms,
+            execution_path: result.execution_path,
+            rounds_completed: result.rounds_completed,
+            rounds_failed: result.rounds_failed,
+        })
+    }
+
+    /// Execute entanglement-based quantum state teleportation between two nodes.
+    #[pyo3(name = "execute_teleportation")]
+    fn execute_teleportation(
+        &self,
+        params: super::types::PyTeleportationParameters,
+    ) -> PyResult<super::types::PyTeleportationOutcome> {
+        let params = crate::protocols::TeleportationParameters {
+            source_node: params.source_node,
+            target_node: params.target_node,
+            state_fidelity: params.state_fidelity,
+            classical_bandwidth_ms: params.classical_bandwidth_ms,
+            relay_nodes: params.relay_nodes,
+        };
+        let result = self.inner.execute_teleportation(params);
+        Ok(super::types::PyTeleportationOutcome {
+            success: result.success,
+            teleportation_fidelity: result.teleportation_fidelity,
+            resource_entanglement_fidelity: result.resource_entanglement_fidelity,
+            latency_ms: result.latency_ms,
+            path: result.path,
+            classical_bits_transferred: result.classical_bits_transferred,
+        })
+    }
+
+    /// Run a distributed quantum computing protocol across participating nodes.
+    #[pyo3(name = "run_distributed_computation")]
+    fn run_distributed_computation(
+        &self,
+        participants: Vec<String>,
+        coordination_topology: String,
+        basis_type: String,
+        correlation_strength: Option<f64>,
+        classical_relay_latency_ms: Option<f64>,
+    ) -> PyResult<super::types::PyDistributedComputingResult> {
+        let topo = match coordination_topology.as_str() {
+            "star" => crate::protocols::CoordinationTopology::Star { center_node: participants.first().cloned().unwrap_or_default() },
+            "ring" => crate::protocols::CoordinationTopology::Ring,
+            "mesh" => crate::protocols::CoordinationTopology::Mesh,
+            _ => return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "coordination_topology must be one of: 'star', 'ring', 'mesh'"
+            )),
+        };
+
+        let basis = match basis_type.as_str() {
+            "ghz" => crate::protocols::BasisType::GHZ,
+            "cluster" => crate::protocols::BasisType::Cluster,
+            "graph" => crate::protocols::BasisType::GraphGraph,
+            _ => return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "basis_type must be one of: 'ghz', 'cluster', 'graph'"
+            )),
+        };
+
+        let params = crate::protocols::DistributedComputingParameters {
+            participants,
+            coordination_topology: topo,
+            measurement_basis: crate::protocols::MeasurementBasis {
+                basis_type: basis,
+                correlation_strength: correlation_strength.unwrap_or(0.85),
+            },
+            classical_relay_latency_ms: classical_relay_latency_ms.unwrap_or(5.0),
+        };
+
+        let result = self.inner.run_distributed_computation(params);
+        Ok(super::types::PyDistributedComputingResult {
+            success: result.success,
+            computation_fidelity: result.computation_fidelity,
+            party_results: result.party_results.into_iter().map(|p| super::types::PyPartyOutcome {
+                node_id: p.node_id,
+                successful_measurement: p.successful_measurement,
+                local_fidelity: p.local_fidelity,
+            }).collect(),
+            resource_links_used: result.resource_links_used,
+            total_latency_ms: result.total_latency_ms,
+            coordination_overhead_ms: result.coordination_overhead_ms,
+        })
+    }
 }
 
 /// Classmethod alternative to `QNetEngine(config?)`: load a .qnet file and return an initialized engine.
@@ -577,4 +683,103 @@ pub(crate) fn load_topology(engine: &mut PyQNetEngine, filepath: &str) -> PyResu
         Ok(_) => Ok(()),
         Err(e) => Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e)),
     }
+}
+
+
+// ============================================================================
+// Module-level convenience functions for higher-level protocols
+// ============================================================================
+
+/// Run BB84-style quantum key distribution between two nodes.
+#[pyfunction]
+pub fn qkd(
+    engine: &PyQNetEngine,
+    from_node: String,
+    to_node: String,
+    fidelity_target: f64,
+    max_latency_ms: f64,
+    rounds: Option<usize>,
+    error_rate_tolerance: Option<f64>,
+) -> PyResult<super::types::PyQKDResult> {
+    let params = crate::protocols::QKDParameters {
+        from_node,
+        to_node,
+        fidelity_target,
+        max_latency_ms,
+        rounds: rounds.unwrap_or(100),
+        error_rate_tolerance: error_rate_tolerance.unwrap_or(0.11),
+        sifting_overhead_ratio: 0.5,
+        privacy_amplification_factor: 0.8,
+    };
+    let result = engine.inner.run_qkd(params);
+    Ok(super::types::PyQKDResult {
+        success: result.success,
+        secret_key_length_bits: result.secret_key_length_bits,
+        efficiency_rate: result.efficiency_rate,
+        qber: result.qber,
+        latency_ms: result.latency_ms,
+        execution_path: result.execution_path,
+        rounds_completed: result.rounds_completed,
+        rounds_failed: result.rounds_failed,
+    })
+}
+
+/// Execute entanglement-based quantum state teleportation between two nodes.
+#[pyfunction]
+pub fn teleportation(
+    engine: &PyQNetEngine,
+    source_node: String,
+    target_node: String,
+    state_fidelity: Option<f64>,
+    classical_bandwidth_ms: Option<f64>,
+) -> PyResult<super::types::PyTeleportationOutcome> {
+    let params = crate::protocols::TeleportationParameters {
+        source_node,
+        target_node,
+        state_fidelity: state_fidelity.unwrap_or(0.95),
+        classical_bandwidth_ms: classical_bandwidth_ms.unwrap_or(100.0),
+        relay_nodes: Vec::new(),
+    };
+    let result = engine.inner.execute_teleportation(params);
+    Ok(super::types::PyTeleportationOutcome {
+        success: result.success,
+        teleportation_fidelity: result.teleportation_fidelity,
+        resource_entanglement_fidelity: result.resource_entanglement_fidelity,
+        latency_ms: result.latency_ms,
+        path: result.path,
+        classical_bits_transferred: result.classical_bits_transferred,
+    })
+}
+
+/// Run a distributed quantum computing protocol across participating nodes.
+#[pyfunction]
+pub fn distributed_computation(
+    engine: &PyQNetEngine,
+    participants: Vec<String>,
+    coordination_topology: super::types::PyCoordinationTopology,
+    measurement_basis: super::types::PyMeasurementBasis,
+    classical_relay_latency_ms: Option<f64>,
+) -> PyResult<super::types::PyDistributedComputingResult> {
+    let params = crate::protocols::DistributedComputingParameters {
+        participants,
+        coordination_topology: super::types::topology_to_inner(&coordination_topology),
+        measurement_basis: crate::protocols::MeasurementBasis {
+            basis_type: measurement_basis.basis_type.0,
+            correlation_strength: measurement_basis.correlation_strength,
+        },
+        classical_relay_latency_ms: classical_relay_latency_ms.unwrap_or(5.0),
+    };
+    let result = engine.inner.run_distributed_computation(params);
+    Ok(super::types::PyDistributedComputingResult {
+        success: result.success,
+        computation_fidelity: result.computation_fidelity,
+        party_results: result.party_results.into_iter().map(|p| super::types::PyPartyOutcome {
+            node_id: p.node_id,
+            successful_measurement: p.successful_measurement,
+            local_fidelity: p.local_fidelity,
+        }).collect(),
+        resource_links_used: result.resource_links_used,
+        total_latency_ms: result.total_latency_ms,
+        coordination_overhead_ms: result.coordination_overhead_ms,
+    })
 }
