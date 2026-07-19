@@ -1,6 +1,6 @@
 # qnet-core Python SDK
 
-Python bindings for the **qnet-core** quantum network simulation engine. Simulates entanglement distribution across repeater networks, models link generation protocols, fidelity purification (BBPSSW), and routing strategies for quantum communication.
+Python bindings for the **qnet-core** quantum network simulation engine. Simulates entanglement distribution across repeater networks, models link generation protocols, fidelity purification (BBPSSW), and routing strategies for quantum communication. Also supports higher-level quantum protocols: QKD key distribution, state teleportation, and distributed quantum computing.
 
 ## Installation
 
@@ -57,7 +57,17 @@ print(f"Mean latency: {stats.mean_latency_ms:.1f} ms")
 print(f"Link utilization: {stats.link_utilization_heatmap}")
 ```
 
-## Pre-built Topologies
+## Higher-Level Quantum Protocols
+
+qnet-core supports three higher-level quantum networking protocols on top of the entanglement simulation layer. See the example files for complete runnable demos:
+
+| Protocol | Example file |
+|----------|-------------|
+| QKD (Quantum Key Distribution) | [examples/qkd_example.py](../../examples/qkd_example.py) |
+| Quantum State Teleportation | [examples/teleportation_example.py](../../examples/teleportation_example.py) |
+| Distributed Quantum Computing | [examples/distributed_computation_example.py](../../examples/distributed_computation_example.py) |
+
+Each example demonstrates both the engine method and the module-level convenience function.
 
 The SDK ships with three ready-to-use topology generators:
 
@@ -101,6 +111,9 @@ Main entry point for all simulations.
 | `define_network` | `(nodes: List[NodeDefinition], links: List[LinkDefinition])` | `None` | Set or replace network topology |
 | `request_entanglement` | `(from_node: str, to: str, fidelity_target: float, max_latency_ms: float, strategy: Optional[StrategyType] = None) -> SimulationResult` | `SimulationResult` | Run a single simulation |
 | `simulate` | `(from_node: str, to: str, fidelity_target: float, max_latency_ms: float, runs: int, strategy: Optional[StrategyType] = None) -> MonteCarloStats` | `MonteCarloStats` | Run Monte Carlo ensemble |
+| `run_qkd` | `(params: QKDParameters) -> QKDResult` | `QKDResult` | Run BB84-style quantum key distribution |
+| `execute_teleportation` | `(params: TeleportationParameters) -> TeleportationOutcome` | `TeleportationOutcome` | Execute entanglement-based state teleportation |
+| `run_distributed_computation` | `(participants: List[str], coordination_topology: CoordinationTopology, measurement_basis: MeasurementBasis, classical_relay_latency_ms: Optional[float]) -> DistributedComputingResult` | `DistributedComputingResult` | Run distributed quantum computing protocol |
 
 ### Enums
 
@@ -215,6 +228,188 @@ Output from a `simulate()` ensemble run.
 | `mean_fidelity` | float | Mean fidelity across successful runs |
 | `aggregate_congestion_drops` | int | Total drops due to qubit memory expiry |
 | `link_utilization_heatmap` | Dict[str, int] | `{link_key: usage_count}` per link |
+
+## Higher-Level Quantum Protocols
+
+qnet-core supports three higher-level quantum networking protocols on top of the entanglement simulation layer. Each protocol is available both as an engine method and as a module-level convenience function. See the [example files](../../examples/) for complete runnable demos.
+
+### QKD (Quantum Key Distribution)
+
+BB84-style protocol for secure key exchange between two nodes.
+
+```python
+from qnet_core import QKDParameters, qkd
+
+# Engine method
+params = QKDParameters(from_node="A", to_node="B", fidelity_target=0.9, max_latency_ms=5000.0, rounds=100)
+result = engine.run_qkd(params=params)
+
+# Convenience function
+result = qkd(engine, "A", "B", 0.9, 5000.0, rounds=100)
+```
+
+#### `QKDParameters`
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `from_node` | str | — | Source node ID |
+| `to_node` | str | — | Destination node ID |
+| `fidelity_target` | float | — | Required entanglement fidelity |
+| `max_latency_ms` | float | — | Maximum allowed latency (ms) |
+| `rounds` | int | 100 | Number of QKD rounds |
+| `error_rate_tolerance` | float | 0.11 | BB84 error threshold |
+| `sifting_overhead_ratio` | float | 0.5 | Public sifting overhead |
+| `privacy_amplification_factor` | float | 0.8 | Privacy amplification factor |
+
+#### `QKDResult`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | bool | Whether secure key was established |
+| `secret_key_length_bits` | int | Length of generated secret key (bits) |
+| `efficiency_rate` | float | Key generation efficiency [0, 1] |
+| `qber` | float | Quantum bit error rate |
+| `latency_ms` | float | Total protocol latency (ms) |
+| `execution_path` | List[str] | Node IDs traversed |
+| `rounds_completed` | int | Number of successful rounds |
+| `rounds_failed` | int | Number of failed rounds |
+
+#### `QKDStats` (Monte Carlo ensemble)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_runs` | int | Number of QKD runs executed |
+| `success_rate` | float | Fraction of successful runs [0, 1] |
+| `mean_key_length_bits` | float | Mean secret key length (bits) |
+| `mean_efficiency` | float | Mean key generation efficiency |
+| `mean_qber` | float | Mean quantum bit error rate |
+
+### Teleportation
+
+Entanglement-based quantum state teleportation across the network.
+
+```python
+from qnet_core import TeleportationParameters, teleportation
+
+params = TeleportationParameters(source_node="A", target_node="B")
+params.relay_nodes = ["B"]  # intermediate relays (optional)
+outcome = engine.execute_teleportation(params=params)
+
+# Convenience function (no relay setup needed)
+from qnet_core import teleportation as tp_fn
+outcome = tp_fn(engine, "A", "B", state_fidelity=0.95)
+```
+
+#### `TeleportationParameters`
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `source_node` | str | — | Source node (Alice) |
+| `target_node` | str | — | Target node (Bob) |
+| `state_fidelity` | float | 0.95 | Input state fidelity |
+| `classical_bandwidth_ms` | float | 100.0 | Classical channel latency (ms) |
+| `relay_nodes` | List[str] | [] | Intermediate relay node IDs |
+
+#### `TeleportationOutcome`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | bool | Whether teleportation succeeded |
+| `teleportation_fidelity` | float | Fidelity of teleported state |
+| `resource_entanglement_fidelity` | float | Fidelity of resource entanglement links |
+| `latency_ms` | float | End-to-end latency (ms) |
+| `path` | List[str] | Node IDs traversed |
+| `classical_bits_transferred` | int | Number of classical bits sent |
+
+#### `TeleportationStats` (Monte Carlo ensemble)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_runs` | int | Number of teleportation runs executed |
+| `success_rate` | float | Fraction of successful runs [0, 1] |
+| `mean_teleportation_fidelity` | float | Mean teleportation fidelity |
+| `teleportation_fidelity_stddev` | float | Standard deviation of teleportation fidelity |
+| `mean_latency_ms` | float | Mean end-to-end latency (ms) |
+
+### Distributed Quantum Computing
+
+Multi-party quantum computation with coordinated measurements. Supports star, ring, mesh, and arbitrary topologies with GHZ / cluster / graph measurement bases.
+
+```python
+from qnet_core import (
+    DistributedComputingParameters, CoordinationTopology,
+    MeasurementBasis, BasisType, distributed_computation,
+)
+
+topology = CoordinationTopology.star("A")
+basis = MeasurementBasis(basis_type=BasisType.GHZ, correlation_strength=0.85)
+result = engine.run_distributed_computation(
+    participants=["A", "B", "C"],
+    coordination_topology=topology,
+    measurement_basis=basis,
+)
+
+# Convenience function
+result = distributed_computation(engine, ["A","B","C"], CoordinationTopology.mesh(), basis)
+```
+
+#### Enumerations
+
+##### `BasisType` — Measurement basis for distributed protocols
+
+| Member | Description |
+|--------|-------------|
+| `BasisType.GHZ` | GHZ-state measurement basis |
+| `BasisType.Cluster` | Cluster-state measurement basis |
+| `BasisType.GraphGraph` | Graph-state measurement basis |
+
+##### `CoordinationTopology` — Party coordination pattern
+
+| Method/Field | Description |
+|--------------|-------------|
+| `.star(center_node)` | Star topology with center node |
+| `.ring()` | Ring topology (circular) |
+| `.mesh()` | All-to-all mesh topology |
+| `.arbitrary(edges)` | Custom edges `[(src, dst), ...]` |
+| `kind` | `"star"`, `"ring"`, `"mesh"`, `"arbitrary"` |
+| `center_node` | Center node for star (optional) |
+| `edges` | Edge list for arbitrary (optional) |
+
+#### `DistributedComputingParameters`
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `participants` | List[str] | — | Participant node IDs |
+| `coordination_topology` | CoordinationTopology | — | Coordination pattern |
+| `measurement_basis` | MeasurementBasis | GHZ, 0.85 | Measurement basis config |
+| `classical_relay_latency_ms` | float | 5.0 | Classical relay latency (ms) |
+
+#### `DistributedComputingResult`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | bool | Whether computation succeeded |
+| `computation_fidelity` | float | Fidelity of the distributed computation |
+| `party_results` | List[PartyOutcome] | Per-party measurement outcomes |
+| `resource_links_used` | List[str] | Links used during protocol |
+| `total_latency_ms` | float | End-to-end latency (ms) |
+| `coordination_overhead_ms` | float | Coordination overhead (ms) |
+
+#### `PartyOutcome`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `node_id` | str | Participant node ID |
+| `successful_measurement` | bool | Whether measurement succeeded |
+| `local_fidelity` | float | Local measurement fidelity |
+
+#### Module-level convenience functions
+
+| Function | Signature | Description |
+|----------|-----------|-------------|
+| `qkd()` | `(engine, from_node, to_node, fidelity_target, max_latency_ms, rounds?, error_rate_tolerance?) -> QKDResult` | Run BB84 QKD (convenience) |
+| `teleportation()` | `(engine, source_node, target_node, state_fidelity?, classical_bandwidth_ms?) -> TeleportationOutcome` | Execute teleportation (convenience) |
+| `distributed_computation()` | `(engine, participants, coordination_topology, measurement_basis, classical_relay_latency_ms?) -> DistributedComputingResult` | Run distributed computation (convenience) |
 
 ### Topology Comparison
 
@@ -367,7 +562,7 @@ print(f"Links added: {diff['links_added']}, removed: {diff['links_removed']}, mo
 
 Everything available after `from qnet_core import ...`:
 
-**Classes (23)**
+**Classes (31)**
 
 | Class | Purpose |
 |-------|---------|
@@ -395,8 +590,21 @@ Everything available after `from qnet_core import ...`:
 | `QNetNodeType` | Node type enum (Ground/Satellite/Repeater) |
 | `QNetLinkType` | Link type enum (Fiber/Satellite) |
 | `QNetSatelliteExtension` | Satellite extension for .qnet links |
+| `QKDParameters` | QKD protocol parameters |
+| `QKDResult` | QKD protocol result |
+| `QKDStats` | QKD ensemble statistics |
+| `TeleportationParameters` | Teleportation protocol parameters |
+| `TeleportationOutcome` | Teleportation protocol result |
+| `TeleportationStats` | Teleportation ensemble statistics |
+| `BasisType` | Measurement basis enum (GHZ/Cluster/Graph) |
+| `CoordinationTopology` | Distributed coordination pattern |
+| `MeasurementBasis` | Measurement basis config |
+| `DistributedComputingParameters` | Distributed computing parameters |
+| `PartyOutcome` | Per-party measurement outcome |
+| `DistributedComputingResult` | Distributed computing result |
+| `DistributedComputingStats` | Distributed computing ensemble stats |
 
-**Module-level functions (9)**
+**Module-level functions (12)**
 
 | Function | Returns | Purpose |
 |----------|---------|---------|
@@ -409,6 +617,9 @@ Everything available after `from qnet_core import ...`:
 | `load_qnet_file(filepath)` | `QNetFile` | Load .qnet JSON as Python objects |
 | `diff(file1, file2)` | `dict` | Diff two .qnet files on disk |
 | `diff_topologies(snap1, snap2)` | `TopologyDiff` | Diff two topology snapshots programmatically |
+| `qkd(engine, from_node, to_node, ...)` | `QKDResult` | Run BB84-style QKD (convenience) |
+| `teleportation(engine, source, target, ...)` | `TeleportationOutcome` | Execute state teleportation (convenience) |
+| `distributed_computation(engine, participants, ...)` | `DistributedComputingResult` | Run distributed quantum computation (convenience) |
 
 ## Running Tests
 
