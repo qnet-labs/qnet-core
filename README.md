@@ -43,12 +43,16 @@ print(stats.empirical_success_rate)
 ```
 
 ## Documentation
-
+- [Documnets main page](https://qnet-labs.github.io/qnet-examples/intro)
+- [Python API Reference Detailed](https://qnet-labs.github.io/qnet-examples/category/api-reference)
 - [Python API Reference](python/README.md) — complete type signatures and function docs
 - [Changelog](CHANGELOG.md) — version history
 
+## Tutorials
+[qnet-core tutorials](https://qnet-labs.github.io/qnet-examples/category/tutorials)
+
 ## Examples
-[Example repo + Jupiter Notebooks](https://github.com/qnet-labs/qnet-examples)
+[Examples](https://github.com/qnet-labs/qnet-examples)
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]
 (https://colab.research.google.com/github/qnet-labs/qnet-core/blob/main/notebooks/01_gothamq_validation.ipynb)
