@@ -20,7 +20,9 @@ impl PurificationEngine {
     /// Improved fidelity, capped at 0.999 (physical ceiling).
     pub fn bbpssw_distill(fidelity: f64, purify_factor: f64) -> f64 {
         let numerator = fidelity * fidelity + (1.0 - fidelity).powi(2) / 9.0;
-        let denominator = fidelity * fidelity + 2.0 * fidelity * (1.0 - fidelity) / 3.0 + (1.0 - fidelity).powi(2) / 9.0;
+        let denominator = fidelity * fidelity
+            + 2.0 * fidelity * (1.0 - fidelity) / 3.0
+            + (1.0 - fidelity).powi(2) / 9.0;
         if denominator > 0.0 {
             (numerator / denominator + purify_factor).min(0.999)
         } else {

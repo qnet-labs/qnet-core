@@ -794,7 +794,9 @@ impl PyQKDStats {
     fn __repr__(&self) -> String {
         format!(
             "QKDStats(runs={}, success={:.0}, mean_key_len={:.1})",
-            self.total_runs, self.success_rate * 100.0, self.mean_key_length_bits
+            self.total_runs,
+            self.success_rate * 100.0,
+            self.mean_key_length_bits
         )
     }
 }
@@ -1150,7 +1152,9 @@ impl PyDistributedComputingResult {
     fn __repr__(&self) -> String {
         format!(
             "DistributedComputingResult(success={}, fidelity={:.4}, parties={})",
-            self.success, self.computation_fidelity, self.party_results.len()
+            self.success,
+            self.computation_fidelity,
+            self.party_results.len()
         )
     }
 }
@@ -1187,7 +1191,9 @@ impl PyDistributedComputingStats {
     fn __repr__(&self) -> String {
         format!(
             "DistributedComputingStats(runs={}, success={:.0}, fidelity={:.4})",
-            self.total_runs, self.success_rate * 100.0, self.mean_computation_fidelity
+            self.total_runs,
+            self.success_rate * 100.0,
+            self.mean_computation_fidelity
         )
     }
 }

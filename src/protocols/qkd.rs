@@ -8,8 +8,8 @@
 
 use crate::api::request::EntanglementRequest;
 use crate::api::response::{QKDResult, QKDStats};
-use crate::QNetEngine;
 use crate::routing::strategy::StrategyType;
+use crate::QNetEngine;
 
 // ============================================================================
 // Request Type
@@ -40,10 +40,18 @@ pub struct QKDParameters {
     pub privacy_amplification_factor: f64,
 }
 
-fn default_rounds() -> usize { 100 }
-fn default_error_rate_tolerance() -> f64 { 0.11 } // Shor-Preskill bound
-fn default_sifting_overhead() -> f64 { 0.5 } // BB84: half discarded for basis mismatch
-fn default_privacy_amplification() -> f64 { 0.8 } // ~80% retained after error correction
+fn default_rounds() -> usize {
+    100
+}
+fn default_error_rate_tolerance() -> f64 {
+    0.11
+} // Shor-Preskill bound
+fn default_sifting_overhead() -> f64 {
+    0.5
+} // BB84: half discarded for basis mismatch
+fn default_privacy_amplification() -> f64 {
+    0.8
+} // ~80% retained after error correction
 
 // ============================================================================
 // Protocol Implementation
@@ -160,10 +168,26 @@ impl QKDProtocol {
 
         QKDStats {
             total_runs: runs,
-            success_rate: if runs > 0 { success_count as f64 / runs as f64 } else { 0.0 },
-            mean_key_length_bits: if success_count > 0 { total_key_length / success_count as f64 } else { 0.0 },
-            mean_efficiency: if success_count > 0 { total_efficiency / success_count as f64 } else { 0.0 },
-            mean_qber: if success_count > 0 { total_qber / success_count as f64 } else { 0.0 },
+            success_rate: if runs > 0 {
+                success_count as f64 / runs as f64
+            } else {
+                0.0
+            },
+            mean_key_length_bits: if success_count > 0 {
+                total_key_length / success_count as f64
+            } else {
+                0.0
+            },
+            mean_efficiency: if success_count > 0 {
+                total_efficiency / success_count as f64
+            } else {
+                0.0
+            },
+            mean_qber: if success_count > 0 {
+                total_qber / success_count as f64
+            } else {
+                0.0
+            },
         }
     }
 }

@@ -290,21 +290,27 @@ impl PyQNetEngine {
         classical_relay_latency_ms: Option<f64>,
     ) -> PyResult<super::types::PyDistributedComputingResult> {
         let topo = match coordination_topology.as_str() {
-            "star" => crate::protocols::CoordinationTopology::Star { center_node: participants.first().cloned().unwrap_or_default() },
+            "star" => crate::protocols::CoordinationTopology::Star {
+                center_node: participants.first().cloned().unwrap_or_default(),
+            },
             "ring" => crate::protocols::CoordinationTopology::Ring,
             "mesh" => crate::protocols::CoordinationTopology::Mesh,
-            _ => return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                "coordination_topology must be one of: 'star', 'ring', 'mesh'"
-            )),
+            _ => {
+                return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    "coordination_topology must be one of: 'star', 'ring', 'mesh'",
+                ))
+            }
         };
 
         let basis = match basis_type.as_str() {
             "ghz" => crate::protocols::BasisType::GHZ,
             "cluster" => crate::protocols::BasisType::Cluster,
             "graph" => crate::protocols::BasisType::GraphGraph,
-            _ => return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                "basis_type must be one of: 'ghz', 'cluster', 'graph'"
-            )),
+            _ => {
+                return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    "basis_type must be one of: 'ghz', 'cluster', 'graph'",
+                ))
+            }
         };
 
         let params = crate::protocols::DistributedComputingParameters {
@@ -321,11 +327,15 @@ impl PyQNetEngine {
         Ok(super::types::PyDistributedComputingResult {
             success: result.success,
             computation_fidelity: result.computation_fidelity,
-            party_results: result.party_results.into_iter().map(|p| super::types::PyPartyOutcome {
-                node_id: p.node_id,
-                successful_measurement: p.successful_measurement,
-                local_fidelity: p.local_fidelity,
-            }).collect(),
+            party_results: result
+                .party_results
+                .into_iter()
+                .map(|p| super::types::PyPartyOutcome {
+                    node_id: p.node_id,
+                    successful_measurement: p.successful_measurement,
+                    local_fidelity: p.local_fidelity,
+                })
+                .collect(),
             resource_links_used: result.resource_links_used,
             total_latency_ms: result.total_latency_ms,
             coordination_overhead_ms: result.coordination_overhead_ms,
@@ -685,7 +695,6 @@ pub(crate) fn load_topology(engine: &mut PyQNetEngine, filepath: &str) -> PyResu
     }
 }
 
-
 // ============================================================================
 // Module-level convenience functions for higher-level protocols
 // ============================================================================
@@ -773,11 +782,15 @@ pub fn distributed_computation(
     Ok(super::types::PyDistributedComputingResult {
         success: result.success,
         computation_fidelity: result.computation_fidelity,
-        party_results: result.party_results.into_iter().map(|p| super::types::PyPartyOutcome {
-            node_id: p.node_id,
-            successful_measurement: p.successful_measurement,
-            local_fidelity: p.local_fidelity,
-        }).collect(),
+        party_results: result
+            .party_results
+            .into_iter()
+            .map(|p| super::types::PyPartyOutcome {
+                node_id: p.node_id,
+                successful_measurement: p.successful_measurement,
+                local_fidelity: p.local_fidelity,
+            })
+            .collect(),
         resource_links_used: result.resource_links_used,
         total_latency_ms: result.total_latency_ms,
         coordination_overhead_ms: result.coordination_overhead_ms,

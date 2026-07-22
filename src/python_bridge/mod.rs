@@ -17,8 +17,8 @@ pub use types::*;
 // Bring #[pyfunction] items into scope for wrap_pyfunction! macro.
 // These are the absolute paths from the crate root (super:: resolves to crate:: not crate::python_bridge).
 use crate::python_bridge::engine::{
-    compare_topologies, from_qnet_file_py, generate_topology, load_topology,
-    save_qnet_file_wrapper, save_topology, qkd, teleportation, distributed_computation,
+    compare_topologies, distributed_computation, from_qnet_file_py, generate_topology,
+    load_topology, qkd, save_qnet_file_wrapper, save_topology, teleportation,
 };
 use crate::python_bridge::qnet_io::{diff, load_qnet_file, validate};
 
@@ -33,29 +33,29 @@ use pyo3::types::PyModule;
 #[pymodule]
 fn qnet_core(_py: Python, m: &PyModule) -> PyResult<()> {
     // Classes (each has #[pyclass(name = "CleanName")] — Python-visible name is clean, Rust struct keeps Py prefix)
-    m.add_class::<PyQNetEngine>()?;           // → QNetEngine
-    m.add_class::<PyPhysicalConfig>()?;       // → PhysicalConfig
-    m.add_class::<PyLinkDefinition>()?;       // → LinkDefinition
-    m.add_class::<PySatelliteConditions>()?;  // → SatelliteConditions
-    m.add_class::<PyEntanglementRequest>()?;  // → EntanglementRequest
-    m.add_class::<PyMonteCarloStats>()?;      // → MonteCarloStats
+    m.add_class::<PyQNetEngine>()?; // → QNetEngine
+    m.add_class::<PyPhysicalConfig>()?; // → PhysicalConfig
+    m.add_class::<PyLinkDefinition>()?; // → LinkDefinition
+    m.add_class::<PySatelliteConditions>()?; // → SatelliteConditions
+    m.add_class::<PyEntanglementRequest>()?; // → EntanglementRequest
+    m.add_class::<PyMonteCarloStats>()?; // → MonteCarloStats
     m.add_class::<TopologyComparisonResult>()?; // → TopologyComparisonResult (already clean)
     m.add_class::<TopologyComparisonReport>()?; // → TopologyComparisonReport (already clean)
-    m.add_class::<PyLinkType>()?;             // → LinkType
-    m.add_class::<PyStrategyType>()?;         // → StrategyType
-    m.add_class::<PySimulationConfig>()?;     // → SimulationConfig
-    m.add_class::<PyNodeDefinition>()?;       // → NodeDefinition
+    m.add_class::<PyLinkType>()?; // → LinkType
+    m.add_class::<PyStrategyType>()?; // → StrategyType
+    m.add_class::<PySimulationConfig>()?; // → SimulationConfig
+    m.add_class::<PyNodeDefinition>()?; // → NodeDefinition
     m.add_class::<PyNetworkTopologyPayload>()?; // → NetworkTopologyPayload
-    m.add_class::<PyQNetFile>()?;             // → QNetFile
-    m.add_class::<PyQNetNode>()?;             // → QNetNode
-    m.add_class::<PyQNetLink>()?;             // → QNetLink
-    m.add_class::<PyQNetConfig>()?;           // → QNetConfig
-    m.add_class::<PyQNetConstraints>()?;      // → QNetConstraints
-    m.add_class::<PyQNetMetadata>()?;         // → QNetMetadata
-    m.add_class::<PyQNetNodeType>()?;         // → QNetNodeType
-    m.add_class::<PyQNetLinkType>()?;         // → QNetLinkType
+    m.add_class::<PyQNetFile>()?; // → QNetFile
+    m.add_class::<PyQNetNode>()?; // → QNetNode
+    m.add_class::<PyQNetLink>()?; // → QNetLink
+    m.add_class::<PyQNetConfig>()?; // → QNetConfig
+    m.add_class::<PyQNetConstraints>()?; // → QNetConstraints
+    m.add_class::<PyQNetMetadata>()?; // → QNetMetadata
+    m.add_class::<PyQNetNodeType>()?; // → QNetNodeType
+    m.add_class::<PyQNetLinkType>()?; // → QNetLinkType
     m.add_class::<PyQNetSatelliteExtension>()?; // → QNetSatelliteExtension
-    m.add_class::<TopologyEndpoints>()?;      // → TopologyEndpoints (already clean)
+    m.add_class::<TopologyEndpoints>()?; // → TopologyEndpoints (already clean)
 
     // Higher-level protocol types
     m.add_class::<types::PyQKDParameters>()?;

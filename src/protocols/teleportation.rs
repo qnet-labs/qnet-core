@@ -9,8 +9,8 @@
 use crate::api::request::EntanglementRequest;
 use crate::api::response::{TeleportationOutcome, TeleportationStats};
 use crate::config::PhysicalConfig;
-use crate::QNetEngine;
 use crate::routing::strategy::StrategyType;
+use crate::QNetEngine;
 
 // ============================================================================
 // Request Type
@@ -34,8 +34,12 @@ pub struct TeleportationParameters {
     pub relay_nodes: Vec<String>,
 }
 
-fn default_state_fidelity() -> f64 { 0.95 }
-fn default_classical_bandwidth() -> f64 { 100.0 }
+fn default_state_fidelity() -> f64 {
+    0.95
+}
+fn default_classical_bandwidth() -> f64 {
+    100.0
+}
 
 // ============================================================================
 // Protocol Implementation
@@ -66,7 +70,11 @@ impl TeleportationProtocol {
             };
 
             let link_result = engine.request_entanglement(request);
-            (link_result.final_fidelity, link_result.latency_ms, link_result.execution_path.clone())
+            (
+                link_result.final_fidelity,
+                link_result.latency_ms,
+                link_result.execution_path.clone(),
+            )
         } else {
             (0.0, 0.0, Vec::new())
         };
@@ -108,7 +116,11 @@ impl TeleportationProtocol {
     }
 
     /// Run multiple independent teleportation sessions and aggregate statistics.
-    pub fn execute_ensemble(engine: &QNetEngine, params: TeleportationParameters, runs: usize) -> TeleportationStats {
+    pub fn execute_ensemble(
+        engine: &QNetEngine,
+        params: TeleportationParameters,
+        runs: usize,
+    ) -> TeleportationStats {
         let mut success_count = 0usize;
         let mut total_fidelity = 0.0f64;
         let mut total_latency = 0.0f64;
@@ -124,7 +136,11 @@ impl TeleportationProtocol {
             }
         }
 
-        let n = if success_count > 0 { success_count as f64 } else { 1.0 };
+        let n = if success_count > 0 {
+            success_count as f64
+        } else {
+            1.0
+        };
         let mean_fidelity = total_fidelity / n;
         let variance = sq_sum / n - mean_fidelity * mean_fidelity;
         // Clamp variance to 0 to avoid NaN from sqrt of negative due to float precision
@@ -132,10 +148,18 @@ impl TeleportationProtocol {
 
         TeleportationStats {
             total_runs: runs,
-            success_rate: if runs > 0 { success_count as f64 / runs as f64 } else { 0.0 },
+            success_rate: if runs > 0 {
+                success_count as f64 / runs as f64
+            } else {
+                0.0
+            },
             mean_teleportation_fidelity: mean_fidelity,
             teleportation_fidelity_stddev: stddev,
-            mean_latency_ms: if success_count > 0 { total_latency / n } else { 0.0 },
+            mean_latency_ms: if success_count > 0 {
+                total_latency / n
+            } else {
+                0.0
+            },
         }
     }
 }

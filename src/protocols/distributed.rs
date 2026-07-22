@@ -8,8 +8,8 @@
 
 use crate::api::request::EntanglementRequest;
 use crate::api::response::{DistributedComputingResult, DistributedComputingStats, PartyOutcome};
-use crate::QNetEngine;
 use crate::routing::strategy::StrategyType;
+use crate::QNetEngine;
 
 // ============================================================================
 // Request Types
@@ -85,7 +85,9 @@ pub struct MeasurementBasis {
     pub correlation_strength: f64,
 }
 
-fn default_correlation_strength() -> f64 { 0.85 }
+fn default_correlation_strength() -> f64 {
+    0.85
+}
 
 /// Parameters for a distributed computing protocol run.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -101,7 +103,9 @@ pub struct DistributedComputingParameters {
     pub classical_relay_latency_ms: f64,
 }
 
-fn default_classical_relay() -> f64 { 5.0 }
+fn default_classical_relay() -> f64 {
+    5.0
+}
 
 // ============================================================================
 // Protocol Implementation
@@ -116,7 +120,10 @@ impl DistributedComputingProtocol {
     /// Determines required entanglement links from `coordination_topology`, establishes each link
     /// via `engine.request_entanglement()`, then simulates coordinated measurements with fidelity
     /// computed as the weighted product of per-link fidelities and party local fidelities.
-    pub fn execute(engine: &QNetEngine, params: DistributedComputingParameters) -> DistributedComputingResult {
+    pub fn execute(
+        engine: &QNetEngine,
+        params: DistributedComputingParameters,
+    ) -> DistributedComputingResult {
         let participants = &params.participants;
         let success = engine.network.is_some();
 
@@ -143,7 +150,11 @@ impl DistributedComputingProtocol {
                 };
 
                 let result = engine.request_entanglement(request);
-                link_fidelities.push(if result.success { result.final_fidelity } else { 0.0 });
+                link_fidelities.push(if result.success {
+                    result.final_fidelity
+                } else {
+                    0.0
+                });
                 total_latency_ms += result.latency_ms;
                 resource_links_used.push(format!("{}->{}", from, to));
             }
@@ -204,7 +215,11 @@ impl DistributedComputingProtocol {
     }
 
     /// Run multiple independent distributed computing sessions and aggregate statistics.
-    pub fn execute_ensemble(engine: &QNetEngine, params: DistributedComputingParameters, runs: usize) -> DistributedComputingStats {
+    pub fn execute_ensemble(
+        engine: &QNetEngine,
+        params: DistributedComputingParameters,
+        runs: usize,
+    ) -> DistributedComputingStats {
         let mut success_count = 0usize;
         let mut total_fidelity = 0.0f64;
         let mut total_party_success_rate = 0.0f64;
@@ -215,7 +230,11 @@ impl DistributedComputingProtocol {
                 success_count += 1;
                 total_fidelity += result.computation_fidelity;
             }
-            let party_success = result.party_results.iter().filter(|p| p.successful_measurement).count();
+            let party_success = result
+                .party_results
+                .iter()
+                .filter(|p| p.successful_measurement)
+                .count();
             let party_rate = if !result.party_results.is_empty() {
                 party_success as f64 / result.party_results.len() as f64
             } else {
@@ -226,9 +245,21 @@ impl DistributedComputingProtocol {
 
         DistributedComputingStats {
             total_runs: runs,
-            success_rate: if runs > 0 { success_count as f64 / runs as f64 } else { 0.0 },
-            mean_computation_fidelity: if success_count > 0 { total_fidelity / success_count as f64 } else { 0.0 },
-            mean_party_success_rate: if runs > 0 { total_party_success_rate / runs as f64 } else { 0.0 },
+            success_rate: if runs > 0 {
+                success_count as f64 / runs as f64
+            } else {
+                0.0
+            },
+            mean_computation_fidelity: if success_count > 0 {
+                total_fidelity / success_count as f64
+            } else {
+                0.0
+            },
+            mean_party_success_rate: if runs > 0 {
+                total_party_success_rate / runs as f64
+            } else {
+                0.0
+            },
         }
     }
 }
