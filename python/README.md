@@ -1,12 +1,14 @@
 # qnet-core Python SDK
 
+[📖 Full API docs](https://qnet-core.dev/docs/) — [Tutorial Index](https://qnet-core.dev/docs/tutorials/overview)
+
 Python bindings for the **qnet-core** quantum network simulation engine. Simulates entanglement distribution across repeater networks, models link generation protocols, fidelity purification (BBPSSW), and routing strategies for quantum communication. Also supports higher-level quantum protocols: QKD key distribution, state teleportation, and distributed quantum computing.
 
 ## Installation
 
 ```bash
-# Install build dependencies
 pip install qnet-core
+```
 
 ## Quick Start
 
@@ -57,19 +59,9 @@ print(f"Mean latency: {stats.mean_latency_ms:.1f} ms")
 print(f"Link utilization: {stats.link_utilization_heatmap}")
 ```
 
-## Higher-Level Quantum Protocols
+## Pre-built Topologies
 
-qnet-core supports three higher-level quantum networking protocols on top of the entanglement simulation layer. See the example files for complete runnable demos:
-
-| Protocol | Example file |
-|----------|-------------|
-| QKD (Quantum Key Distribution) | [examples/qkd_example.py](../../examples/qkd_example.py) |
-| Quantum State Teleportation | [examples/teleportation_example.py](../../examples/teleportation_example.py) |
-| Distributed Quantum Computing | [examples/distributed_computation_example.py](../../examples/distributed_computation_example.py) |
-
-Each example demonstrates both the engine method and the module-level convenience function.
-
-The SDK ships with three ready-to-use topology generators:
+qnet-core ships with three ready-to-use topology generators:
 
 ```python
 from qnet_core import generate_topology
@@ -97,141 +89,9 @@ for link in backbone.links:
 | `repeater_chain`         | RepeaterChain (length=4)  | Linear chain of 4 repeaters    |
 | `hybrid_satellite_fiber` | HybridSatelliteFiber      | Satellite + fiber mix          |
 
-## API Reference
-
-### Engine
-
-#### `QNetEngine(config: Optional[SimulationConfig] = None)`
-
-Main entry point for all simulations.
-
-| Method | Signature | Returns | Description |
-|--------|-----------|---------|-------------|
-| `__init__` | `(config: Optional[SimulationConfig] = None)` | — | Create engine with optional config |
-| `define_network` | `(nodes: List[NodeDefinition], links: List[LinkDefinition])` | `None` | Set or replace network topology |
-| `request_entanglement` | `(from_node: str, to: str, fidelity_target: float, max_latency_ms: float, strategy: Optional[StrategyType] = None) -> SimulationResult` | `SimulationResult` | Run a single simulation |
-| `simulate` | `(from_node: str, to: str, fidelity_target: float, max_latency_ms: float, runs: int, strategy: Optional[StrategyType] = None) -> MonteCarloStats` | `MonteCarloStats` | Run Monte Carlo ensemble |
-| `run_qkd` | `(params: QKDParameters) -> QKDResult` | `QKDResult` | Run BB84-style quantum key distribution |
-| `execute_teleportation` | `(params: TeleportationParameters) -> TeleportationOutcome` | `TeleportationOutcome` | Execute entanglement-based state teleportation |
-| `run_distributed_computation` | `(participants: List[str], coordination_topology: CoordinationTopology, measurement_basis: MeasurementBasis, classical_relay_latency_ms: Optional[float]) -> DistributedComputingResult` | `DistributedComputingResult` | Run distributed quantum computing protocol |
-
-### Enums
-
-#### `StrategyType` — Routing strategies
-
-| Member | Description |
-|--------|-------------|
-| `StrategyType.LowestLatency` | Minimize end-to-end latency |
-| `StrategyType.HighestFidelity` | Maximize entanglement fidelity |
-| `StrategyType.HighestSuccess` | Maximize link generation success rate |
-
-#### `LinkType` — Link physical type
-
-| Member | Description |
-|--------|-------------|
-| `LinkType.Fiber` | Optical fiber link |
-| `LinkType.Satellite` | Satellite (free-space) link |
-
-#### `QNetNodeType` — Node classification (for .qnet files)
-
-| Member | Description |
-|--------|-------------|
-| `QNetNodeType.Ground` | Ground-based station |
-| `QNetNodeType.Satellite` | Orbital satellite node |
-| `QNetNodeType.Repeater` | Quantum repeater |
-
-#### `QNetLinkType` — Link classification (for .qnet files)
-
-| Member | Description |
-|--------|-------------|
-| `QNetLinkType.Fiber` | Fiber optic link |
-| `QNetLinkType.Satellite` | Satellite free-space link |
-
-### Configuration Types
-
-#### `SimulationConfig(total_time_cutoff_ms: float, step_resolution_ms: float, physical: PhysicalConfig)`
-
-Simulation timeline configuration.
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `total_time_cutoff_ms` | 5000.0 | Maximum simulation wall-clock time (ms) |
-| `step_resolution_ms` | 0.1 | Event scheduler tick size (ms) |
-| `physical` | — | See PhysicalConfig below |
-
-#### `PhysicalConfig(alpha_loss_db_km: Optional[float] = None)`
-
-Physical layer constants.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `baseline_purify_factor` | float | `alpha/10` | Purification baseline factor |
-| `speed_of_light_in_fiber_km_ms` | float | 200.0 | Light speed in fiber (km/ms) |
-
-#### `SatelliteConditions(visibility: Optional[float]=1.0, weather_factor: Optional[float]=1.0)`
-
-Atmospheric conditions for satellite links.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `visibility` | float | 1.0 | Atmospheric visibility (0-1) |
-| `weather_factor` | float | 1.0 | Weather attenuation multiplier |
-| **Method** | `effective_rate(base_rate: float) -> float` | | Returns `base_rate * visibility * weather_factor` |
-
-### Topology Types
-
-#### `NodeDefinition(id: str, memory_lifetime_t2: float)`
-
-Quantum node (station or repeater).
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | str | Unique node identifier |
-| `memory_lifetime_t2` | float | Qubit T2 coherence time (s) |
-
-#### `LinkDefinition(from_node: str, to: str, distance_km: float, base_fidelity: float, generation_rate_hz: float, link_type: Optional[LinkType]=Fiber, satellite_conditions: Optional[SatelliteConditions]=None)`
-
-Physical quantum link between two nodes.
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `from_node` | str | — | Source node ID |
-| `to` | str | — | Destination node ID |
-| `distance_km` | float | — | Physical distance (km) |
-| `base_fidelity` | float | — | Raw link entanglement fidelity |
-| `generation_rate_hz` | float | — | Photon pair generation rate (Hz) |
-| `link_type` | LinkType | Fiber | Physical medium |
-| `satellite_conditions` | SatelliteConditions | None | Conditions if satellite link |
-
-### Result Types
-
-#### `SimulationResult(success: bool, latency_ms: float, final_fidelity: float, execution_path: List[str])`
-
-Output from a single `request_entanglement()` call.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | bool | Whether entanglement was established |
-| `latency_ms` | float | End-to-end latency (ms) |
-| `final_fidelity` | float | Final entangled state fidelity |
-| `execution_path` | List[str] | Node IDs traversed (inclusive) |
-
-#### `MonteCarloStats(total_runs: int, empirical_success_rate: float, mean_latency_ms: float, mean_fidelity: float, aggregate_congestion_drops: int, link_utilization_heatmap: Dict[str, int])`
-
-Output from a `simulate()` ensemble run.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `total_runs` | int | Number of simulation runs executed |
-| `empirical_success_rate` | float | Fraction of successful runs [0, 1] |
-| `mean_latency_ms` | float | Mean latency across all runs (ms) |
-| `mean_fidelity` | float | Mean fidelity across successful runs |
-| `aggregate_congestion_drops` | int | Total drops due to qubit memory expiry |
-| `link_utilization_heatmap` | Dict[str, int] | `{link_key: usage_count}` per link |
-
 ## Higher-Level Quantum Protocols
 
-qnet-core supports three higher-level quantum networking protocols on top of the entanglement simulation layer. Each protocol is available both as an engine method and as a module-level convenience function. See the [example files](../../examples/) for complete runnable demos.
+qnet-core supports three higher-level quantum networking protocols on top of the entanglement simulation layer. Each protocol is available as both an engine method and a module-level convenience function. See the [example files](../../examples/) (TODO: update to `qnet-labs/qnet-examples` after repo split) for complete runnable demos.
 
 ### QKD (Quantum Key Distribution)
 
@@ -275,6 +135,8 @@ result = qkd(engine, "A", "B", 0.9, 5000.0, rounds=100)
 | `rounds_failed` | int | Number of failed rounds |
 
 #### `QKDStats` (Monte Carlo ensemble)
+
+> **Note:** Monte Carlo ensemble for QKD is planned but not yet implemented. `run_qkd()` currently returns a single `QKDResult`.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -322,6 +184,8 @@ outcome = tp_fn(engine, "A", "B", state_fidelity=0.95)
 | `classical_bits_transferred` | int | Number of classical bits sent |
 
 #### `TeleportationStats` (Monte Carlo ensemble)
+
+> **Note:** Monte Carlo ensemble for teleportation is planned but not yet implemented. `execute_teleportation()` currently returns a single `TeleportationOutcome`.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -403,7 +267,18 @@ result = distributed_computation(engine, ["A","B","C"], CoordinationTopology.mes
 | `successful_measurement` | bool | Whether measurement succeeded |
 | `local_fidelity` | float | Local measurement fidelity |
 
-#### Module-level convenience functions
+#### `DistributedComputingStats` (Monte Carlo ensemble)
+
+> **Note:** Monte Carlo ensemble for distributed computation is planned but not yet implemented. `run_distributed_computation()` currently returns a single `DistributedComputingResult`.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_runs` | int | Number of runs executed |
+| `success_rate` | float | Fraction of successful runs [0, 1] |
+| `mean_computation_fidelity` | float | Mean computation fidelity |
+| `mean_coordination_overhead_ms` | float | Mean coordination overhead (ms) |
+
+### Module-level convenience functions
 
 | Function | Signature | Description |
 |----------|-----------|-------------|
@@ -513,7 +388,7 @@ result = engine.request_entanglement(
 #### Load & validate
 
 ```python
-from qnet_core import load_qnet_file, validate
+from qnet_core import load_qnet_file, validate, diff
 
 # Load as structured Python object
 qf = load_qnet_file("network.qnet")
@@ -546,23 +421,158 @@ print(f"Links added: {diff['links_added']}, removed: {diff['links_removed']}, mo
 
 #### `.qnet` container types
 
-| Class | Constructor | Key fields |
-|-------|------------|------------|
-| **QNetFile** | `(name: str)` | `version`, `metadata` (QNetMetadata), `nodes` (List[QNetNode]), `links` (List[QNetLink]), `config` (Optional[QNetConfig]), `constraints` (Optional[QNetConstraints]) |
-| **QNetFile.add_node(...)** | `(id, memory_lifetime_ms?, memory_capacity?, node_type?)` | — | Push a node onto the file |
-| **QNetFile.add_link(...)** | `(id, src, to, distance_km, base_fidelity, generation_rate_hz, link_type?, satellite?)` | — | Push a link onto the file |
-| **QNetFile.save(...)** | `(filepath: str)` | `None` | Write pretty-printed JSON to disk |
-| **QNetNode** | `(id, memory_lifetime_ms?, memory_capacity?, node_type?)` | `id`, `memory_lifetime_ms`, `memory_capacity`, `node_type` |
-| **QNetLink** | `(id, src, to, distance_km, base_fidelity, generation_rate_hz, link_type?, satellite?)` | `id`, `src`, `to`, `distance_km`, `base_fidelity`, `generation_rate_hz`, `link_type`, `satellite` (QNetSatelliteExtension) |
-| **QNetConfig** | `(alpha_loss?, beta_fidelity_decay?, gamma_swapping?, max_attempts?)` | `alpha_loss`, `beta_fidelity_decay`, `gamma_swapping`, `max_attempts` |
-| **QNetConstraints** | `(fidelity_target?, max_latency_ms?)` | `fidelity_target`, `max_latency_ms` — supports `__eq__` |
-| **QNetMetadata** | `(name, description?, author?, created_at?)` | `name`, `description`, `author`, `created_at` |
+| Class / Method | Signature | Description |
+|----------------|-----------|-------------|
+| **QNetFile** | `(name: str)` | Container for .qnet JSON (load/save/diff) |
+| `QNetFile.nodes` | — | List of nodes in this file |
+| `QNetFile.links` | — | List of links in this file |
+| `QNetFile.add_node(...)` | `(id, memory_lifetime_ms?, memory_capacity?, node_type?)` | Push a node onto the file |
+| `QNetFile.add_link(...)` | `(id, src, to, distance_km, base_fidelity, generation_rate_hz, link_type?, satellite?)` | Push a link onto the file |
+| `QNetFile.save(...)` | `(filepath: str)` | Write pretty-printed JSON to disk |
+| **QNetNode** | `(id, memory_lifetime_ms?, memory_capacity?, node_type?)` | Node for .qnet format |
+| **QNetLink** | `(id, src, to, distance_km, base_fidelity, generation_rate_hz, link_type?, satellite?)` | Link for .qnet format |
+| **QNetConfig** | `(alpha_loss?, beta_fidelity_decay?, gamma_swapping?, max_attempts?)` | Physics config for .qnet |
+| **QNetConstraints** | `(fidelity_target?, max_latency_ms?)` | Constraints — supports `__eq__` |
+| **QNetMetadata** | `(name, description?, author?, created_at?)` | Metadata for .qnet files |
+
+## API Reference
+
+### Engine
+
+#### `QNetEngine(config: Optional[SimulationConfig] = None)`
+
+Main entry point for all simulations.
+
+| Method | Signature | Returns | Description |
+|--------|-----------|---------|-------------|
+| `__init__` | `(config: Optional[SimulationConfig] = None)` | — | Create engine with optional config |
+| `define_network` | `(nodes: List[NodeDefinition], links: List[LinkDefinition])` | `None` | Set or replace network topology |
+| `request_entanglement` | `(from_node: str, to: str, fidelity_target: float, max_latency_ms: float, strategy: Optional[StrategyType] = None) -> SimulationResult` | `SimulationResult` | Run a single simulation |
+| `simulate` | `(from_node: str, to: str, fidelity_target: float, max_latency_ms: float, runs: int, strategy: Optional[StrategyType] = None) -> MonteCarloStats` | `MonteCarloStats` | Run Monte Carlo ensemble |
+| `run_qkd` | `(params: QKDParameters) -> QKDResult` | `QKDResult` | Run BB84-style quantum key distribution |
+| `execute_teleportation` | `(params: TeleportationParameters) -> TeleportationOutcome` | `TeleportationOutcome` | Execute entanglement-based state teleportation |
+| `run_distributed_computation` | `(participants: List[str], coordination_topology: CoordinationTopology, measurement_basis: MeasurementBasis, classical_relay_latency_ms: Optional[float]) -> DistributedComputingResult` | `DistributedComputingResult` | Run distributed quantum computing protocol |
+
+### Enums
+
+#### `StrategyType` — Routing strategies
+
+| Member | Description |
+|--------|-------------|
+| `StrategyType.LowestLatency` | Minimize end-to-end latency |
+| `StrategyType.HighestFidelity` | Maximize entanglement fidelity |
+| `StrategyType.HighestSuccess` | Maximize link generation success rate |
+
+#### `LinkType` — Link physical type
+
+| Member | Description |
+|--------|-------------|
+| `LinkType.Fiber` | Optical fiber link |
+| `LinkType.Satellite` | Satellite (free-space) link |
+
+#### `QNetNodeType` — Node classification (for .qnet files)
+
+| Member | Description |
+|--------|-------------|
+| `QNetNodeType.Ground` | Ground-based station |
+| `QNetNodeType.Satellite` | Orbital satellite node |
+| `QNetNodeType.Repeater` | Quantum repeater |
+
+#### `QNetLinkType` — Link classification (for .qnet files)
+
+| Member | Description |
+|--------|-------------|
+| `QNetLinkType.Fiber` | Fiber optic link |
+| `QNetLinkType.Satellite` | Satellite free-space link |
+
+### Configuration Types
+
+#### `SimulationConfig(total_time_cutoff_ms: float, step_resolution_ms: float, physical: PhysicalConfig)`
+
+Simulation timeline configuration.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `total_time_cutoff_ms` | 5000.0 | Maximum simulation wall-clock time (ms) |
+| `step_resolution_ms` | 0.1 | Event scheduler tick size (ms) |
+| `physical` | — | See PhysicalConfig below |
+
+#### `PhysicalConfig(alpha_loss_db_km: Optional[float] = None)`
+
+Physical layer constants for link loss and propagation models.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `alpha_loss_db_km` | float | `0.22` | Fiber attenuation in dB/km (standard telecom fiber ≈ 0.22 dB/km at 1550 nm) |
+
+Derived constants (not configurable): `baseline_purify_factor ≈ alpha/10`, `speed_of_light_in_fiber_km_ms = 200.0`.
+
+#### `SatelliteConditions(visibility: Optional[float]=1.0, weather_factor: Optional[float]=1.0)`
+
+Atmospheric conditions for satellite links.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `visibility` | float | 1.0 | Atmospheric visibility (0-1) |
+| `weather_factor` | float | 1.0 | Weather attenuation multiplier |
+| **Method** | `effective_rate(base_rate: float) -> float` | | Returns `base_rate * visibility * weather_factor` |
+
+### Topology Types
+
+#### `NodeDefinition(id: str, memory_lifetime_t2: float)`
+
+Quantum node (station or repeater).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | str | Unique node identifier |
+| `memory_lifetime_t2` | float | Qubit T2 coherence time (s) |
+
+#### `LinkDefinition(from_node: str, to: str, distance_km: float, base_fidelity: float, generation_rate_hz: float, link_type: Optional[LinkType]=Fiber, satellite_conditions: Optional[SatelliteConditions]=None)`
+
+Physical quantum link between two nodes.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `from_node` | str | — | Source node ID |
+| `to` | str | — | Destination node ID |
+| `distance_km` | float | — | Physical distance (km) |
+| `base_fidelity` | float | — | Raw link entanglement fidelity |
+| `generation_rate_hz` | float | — | Photon pair generation rate (Hz) |
+| `link_type` | LinkType | Fiber | Physical medium |
+| `satellite_conditions` | SatelliteConditions | None | Conditions if satellite link |
+
+### Result Types
+
+#### `SimulationResult(success: bool, latency_ms: float, final_fidelity: float, execution_path: List[str])`
+
+Output from a single `request_entanglement()` call.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | bool | Whether entanglement was established |
+| `latency_ms` | float | End-to-end latency (ms) |
+| `final_fidelity` | float | Final entangled state fidelity |
+| `execution_path` | List[str] | Node IDs traversed (inclusive) |
+
+#### `MonteCarloStats(total_runs: int, empirical_success_rate: float, mean_latency_ms: float, mean_fidelity: float, aggregate_congestion_drops: int, link_utilization_heatmap: Dict[str, int])`
+
+Output from a `simulate()` ensemble run.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_runs` | int | Number of simulation runs executed |
+| `empirical_success_rate` | float | Fraction of successful runs [0, 1] |
+| `mean_latency_ms` | float | Mean latency across all runs (ms) |
+| `mean_fidelity` | float | Mean fidelity across successful runs |
+| `aggregate_congestion_drops` | int | Total drops due to qubit memory expiry |
+| `link_utilization_heatmap` | Dict[str, int] | `{link_key: usage_count}` per link |
 
 ## Complete Import Map
 
 Everything available after `from qnet_core import ...`:
 
-**Classes (31)**
+**Classes (32)**
 
 | Class | Purpose |
 |-------|---------|
@@ -576,6 +586,7 @@ Everything available after `from qnet_core import ...`:
 | `SatelliteConditions` | Atmospheric conditions helper |
 | `SimulationResult` | Single-run result |
 | `MonteCarloStats` | Ensemble result |
+| `NetworkTopologyPayload` | Generated topology (nodes + links) from `generate_topology()` |
 | `TopologyEndpoints` | Endpoint mapping for comparison |
 | `TopologySnapshot` | Topology snapshot (for diffing) |
 | `TopologyMetadata` | Snapshot metadata |
@@ -602,7 +613,7 @@ Everything available after `from qnet_core import ...`:
 | `DistributedComputingParameters` | Distributed computing parameters |
 | `PartyOutcome` | Per-party measurement outcome |
 | `DistributedComputingResult` | Distributed computing result |
-| `DistributedComputingStats` | Distributed computing ensemble stats |
+| `DistributedComputingStats` | Distributed computing ensemble stats (planned) |
 
 **Module-level functions (12)**
 
@@ -624,6 +635,10 @@ Everything available after `from qnet_core import ...`:
 ## Running Tests
 
 ```bash
+# Python tests
 cd python
 python test_example.py
+
+# Rust core tests
+cargo test
 ```

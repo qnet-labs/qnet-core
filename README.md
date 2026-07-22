@@ -43,13 +43,13 @@ print(stats.empirical_success_rate)
 ```
 
 ## Documentation
-- [Documnets main page](https://qnet-labs.github.io/qnet-examples/intro)
-- [Python API Reference Detailed](https://qnet-labs.github.io/qnet-examples/category/api-reference)
+- [Documentation](https://qnet-labs.github.io/qnet-examples/)
+- [API](https://qnet-labs.github.io/qnet-examples/docs/api-reference/index)
 - [Python API Reference](python/README.md) — complete type signatures and function docs
 - [Changelog](CHANGELOG.md) — version history
 
 ## Tutorials
-[qnet-core tutorials](https://qnet-labs.github.io/qnet-examples/category/tutorials)
+[qnet-core tutorials](https://qnet-labs.github.io/qnet-examples/docs/tutorials/overview)
 
 ## Examples
 [Examples](https://github.com/qnet-labs/qnet-examples)

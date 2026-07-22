@@ -21,6 +21,7 @@ wheels/
 *.egg
 MANIFEST
 .github/workflows/release.yml
+examples/www/
 
 # Virtual environments
 .venv/
